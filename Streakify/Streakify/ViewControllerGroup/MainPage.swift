@@ -68,20 +68,46 @@ struct MainPageView: View {
         }
     }
 
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
 
     var habitList: some View {
-        List {
-            ForEach($habits) { $habit in  // Use $ to pass a binding to HabitRow
-                HabitRow(habit: $habit, deleteAction: {
-                    if let index = habits.firstIndex(where: { $0.id == habit.id }) {
-                        habits.remove(at: index)
-                    }
-                })
+        ScrollView {
+            LazyVStack {
+                ForEach($habits) { $habit in
+                    HabitRow(habit: $habit, deleteAction: {
+                        if let index = habits.firstIndex(where: { $0.id == habit.id }) {
+                            habits.remove(at: index)
+                        }
+                    })
+                    .listRowBackground(Color(red: 11 / 255, green: 37 / 255, blue: 64 / 255))
+                    Divider().background(Color.white.opacity(0.2))
+                }
+                .onDelete(perform: deleteHabits)
             }
-            .onDelete(perform: deleteHabits)
         }
-        .listStyle(PlainListStyle())
+        .background(VisualEffectBlur(blurStyle: .dark)) // Apply blur effect to the background
     }
+
+
+    
+    
+    
+    
+    
+    
+    
+    
+    
+
 
     @State private var animateGreenBackground = false
     @State private var showingAddHabit = false
@@ -186,7 +212,7 @@ struct HabitRow: View {
     var body: some View {
         HStack {
             Button(action: {
-                habit.progress = habit.progress == 1.0 ? 0.0 : 1.0  // Toggle completion
+                habit.progress = habit.progress == 1.0 ? 0.0 : 1.0
             }) {
                 Image(systemName: habit.progress == 1.0 ? "checkmark.circle.fill" : "circle")
                     .foregroundColor(habit.progress == 1.0 ? .green : .gray)
@@ -194,9 +220,15 @@ struct HabitRow: View {
             }
             .buttonStyle(PlainButtonStyle())
 
-            Text(habit.name)
-                .foregroundColor(.white)
-                .strikethrough(habit.progress == 1.0, color: .white)
+            VStack(alignment: .leading) {
+                Text(habit.name)
+                    .font(.headline)
+                    .foregroundColor(.white)
+                Text("Progress: \(habit.progress * 100, specifier: "%.0f")%")
+                    .font(.caption)
+                    .foregroundColor(.gray)
+            }
+            .strikethrough(habit.progress == 1.0, color: .white)
 
             Spacer()
 
@@ -209,14 +241,19 @@ struct HabitRow: View {
         .padding()
         .background(Color(red: 11 / 255, green: 37 / 255, blue: 64 / 255))
         .cornerRadius(10)
+        .shadow(radius: 5)
         .padding(.horizontal)
     }
 }
 
 
 
+
+
+
 struct MainPageView_Previews: PreviewProvider {
     static var previews: some View {
+        
         MainPageView()
     }
 }
@@ -250,58 +287,82 @@ struct Habit: Identifiable {
 
 
 
+
+
+
+
+
+
+
+
+
+
+///ADD NEW HABIT
+
+
+
 struct AddHabitView: View {
     @Binding var habits: [Habit]
     @Environment(\.presentationMode) var presentationMode
     @State private var habitName: String = ""
     @State private var isAnimatingButton: Bool = false
 
+    // Using the specific color as a constant
+    let backgroundColor = Color(red: 11 / 255, green: 37 / 255, blue: 64 / 255)
     var body: some View {
-        VStack(alignment: .leading, spacing: 20) {
-            Text("Add New Habit")
-                .font(.largeTitle)
-                .fontWeight(.bold)
-                .foregroundColor(.white)
-                .padding(.top)
+        ZStack {
+            // Background with the specific color
+            backgroundColor.edgesIgnoringSafeArea(.all)
             
-            TextField("Habit name", text: $habitName)
+            // Content
+            VStack(spacing: 20) {
+                Spacer()
+                // Habit Text Field
+                TextField("What's the habit?", text: $habitName)
+                    .padding()
+                    .background(VisualEffectBlur(blurStyle: .dark)) // Use VisualEffectBlur for modern blur effect
+                    .cornerRadius(16)
+                    .foregroundColor(.white) //this is the cursor of typing a habit
+                    .padding(.horizontal, 20)
+                
+                // Save Button
+                Button(action: {
+                    saveHabit()
+                }) {
+                    Text("Let's do this!")
+                        .bold()
+                        .frame(minWidth: 0, maxWidth: .infinity)
+                        .padding()
+                        .background(RoundedRectangle(cornerRadius: 16).fill(isAnimatingButton ? Color.green.opacity(0.7) : Color.green))
+                        .scaleEffect(isAnimatingButton ? 0.95 : 1)
+                        .foregroundColor(.white)
+                }
+                .disabled(habitName.isEmpty)
+                .padding(.horizontal, 20)
+                
+                Spacer()
+                
+                // Cancel button
+                Button("Cancel") {
+                    presentationMode.wrappedValue.dismiss()
+                }
+                .foregroundColor(.white)
                 .padding()
-                .background(Color.white.opacity(0.1))
-                .cornerRadius(10)
-                .foregroundColor(.white)
-                .overlay(RoundedRectangle(cornerRadius: 10).stroke(Color.white, lineWidth: 1))
-                .padding(.horizontal)
-            
-            Button(action: {
-                withAnimation {
+            }
+        }
+        .onAppear {
+            // Start with a slightly delayed animation to draw attention to the text field
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                withAnimation(.easeOut(duration: 0.7)) {
                     isAnimatingButton = true
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-                        isAnimatingButton = false
-                        saveHabit()
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
+                        withAnimation(.easeIn(duration: 0.3)) {
+                            isAnimatingButton = false
+                        }
                     }
                 }
-            }) {
-                Text("Save Habit")
-                    .bold()
-                    .frame(minWidth: 0, maxWidth: .infinity)
-                    .padding()
-                    .background(isAnimatingButton ? Color.green.opacity(0.5) : Color.green)
-                    .foregroundColor(.white)
-                    .cornerRadius(10)
-                    .padding(.horizontal)
-                    .scaleEffect(isAnimatingButton ? 0.9 : 1.0)
             }
-            .disabled(habitName.isEmpty)
-            
-            Spacer()
         }
-        .padding()
-        .background(LinearGradient(gradient: Gradient(colors: [Color(red: 11 / 255, green: 37 / 255, blue: 64 / 255), Color(red: 21 / 255, green: 67 / 255, blue: 96 / 255)]), startPoint: .top, endPoint: .bottom).edgesIgnoringSafeArea(.all))
-        .navigationBarItems(leading: Button("Cancel") {
-            presentationMode.wrappedValue.dismiss()
-        })
-        .navigationBarBackButtonHidden(true)
-        
     }
 
     private func saveHabit() {
@@ -310,6 +371,22 @@ struct AddHabitView: View {
         presentationMode.wrappedValue.dismiss()
     }
 }
+
+
+// Since VisualEffectBlur is not a default SwiftUI view, we need to create it
+struct VisualEffectBlur: UIViewRepresentable {
+    var blurStyle: UIBlurEffect.Style
+    
+    func makeUIView(context: Context) -> UIVisualEffectView {
+        return UIVisualEffectView(effect: UIBlurEffect(style: blurStyle))
+    }
+    
+    func updateUIView(_ uiView: UIVisualEffectView, context: Context) {}
+}
+
+
+
+
 
 
 
@@ -329,6 +406,5 @@ struct FilledButton: ButtonStyle {
             .scaleEffect(configuration.isPressed ? 0.95 : 1)
     }
 }
-
 
 
