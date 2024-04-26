@@ -5,7 +5,7 @@ import SwiftUI
 
 struct MainPageView: View {
     @State private var habits: [Habit] = []
-    @State private var showingAddHabit = false
+    //@State private var showingAddHabit = false
     let username: String = "User"
     let backgroundColor = Color(red: 11 / 255, green: 37 / 255, blue: 64 / 255)
 
@@ -83,26 +83,83 @@ struct MainPageView: View {
         .listStyle(PlainListStyle())
     }
 
+    @State private var animateGreenBackground = false
+    @State private var showingAddHabit = false
 
+//
+    
+    
+    
+    
+    /////
+    ///
+    ///
+    ///
+    ///
+    ///
 
     var addHabitButton: some View {
-        Button(action: {
+        RippleButton(isAnimating: $animateGreenBackground) {
             showingAddHabit.toggle()
-        }) {
-            Text("Add New Habit")
-                .bold()
-                .frame(minWidth: 0, maxWidth: .infinity)
-                .padding()
-                .foregroundColor(.white)
-                .background(Color.green)
-                .cornerRadius(20)
         }
-        .padding()
-        .sheet(isPresented: $showingAddHabit) {
+        .sheet(isPresented: $showingAddHabit, onDismiss: { animateGreenBackground = false }) {
             AddHabitView(habits: $habits)
         }
     }
 
+
+
+/////
+    ///
+    ///
+    ///
+    ///
+    ///
+    ///
+    ///ripple button here
+    struct RippleButton: View {
+        @Binding var isAnimating: Bool
+        let action: () -> Void
+        
+        var body: some View {
+            Button(action: {
+                withAnimation(.easeOut(duration: 0.5)) {
+                    isAnimating = true
+                }
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                    action()
+                }
+            }) {
+                Text("Add New Habit")
+                    .bold()
+                    .frame(minWidth: 0, maxWidth: .infinity)
+                    .padding()
+                    .foregroundColor(.white)
+                    .background(Color.green)
+                    .cornerRadius(20)
+                    .overlay(
+                        ZStack {
+                            if isAnimating {
+                                Circle()
+                                    .fill(Color.green)
+                                    .scaleEffect(isAnimating ? 5 : 1)
+                                    .opacity(isAnimating ? 0 : 1)
+                                    .animation(.easeOut(duration: 0.5), value: isAnimating)
+                            }
+                        }, alignment: .center
+                    )
+            }
+            .padding()
+        }
+    }
+
+    ///
+    ///
+    ///
+    ///
+    
+    
+    
     func deleteHabits(at offsets: IndexSet) {
         habits.remove(atOffsets: offsets)
     }
@@ -163,3 +220,115 @@ struct MainPageView_Previews: PreviewProvider {
         MainPageView()
     }
 }
+
+
+
+
+
+
+
+///this is from the other file
+///
+///FROM CONTENT VIEW
+///
+///
+
+import Foundation
+
+
+struct Habit: Identifiable {
+    let id = UUID()
+    var name: String
+    var progress: CGFloat
+
+    init(name: String, progress: CGFloat = 0.0) { // Default value for progress
+        self.name = name
+        self.progress = progress
+    }
+}
+
+
+
+
+struct AddHabitView: View {
+    @Binding var habits: [Habit]
+    @Environment(\.presentationMode) var presentationMode
+    @State private var habitName: String = ""
+    @State private var isAnimatingButton: Bool = false
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 20) {
+            Text("Add New Habit")
+                .font(.largeTitle)
+                .fontWeight(.bold)
+                .foregroundColor(.white)
+                .padding(.top)
+            
+            TextField("Habit name", text: $habitName)
+                .padding()
+                .background(Color.white.opacity(0.1))
+                .cornerRadius(10)
+                .foregroundColor(.white)
+                .overlay(RoundedRectangle(cornerRadius: 10).stroke(Color.white, lineWidth: 1))
+                .padding(.horizontal)
+            
+            Button(action: {
+                withAnimation {
+                    isAnimatingButton = true
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                        isAnimatingButton = false
+                        saveHabit()
+                    }
+                }
+            }) {
+                Text("Save Habit")
+                    .bold()
+                    .frame(minWidth: 0, maxWidth: .infinity)
+                    .padding()
+                    .background(isAnimatingButton ? Color.green.opacity(0.5) : Color.green)
+                    .foregroundColor(.white)
+                    .cornerRadius(10)
+                    .padding(.horizontal)
+                    .scaleEffect(isAnimatingButton ? 0.9 : 1.0)
+            }
+            .disabled(habitName.isEmpty)
+            
+            Spacer()
+        }
+        .padding()
+        .background(LinearGradient(gradient: Gradient(colors: [Color(red: 11 / 255, green: 37 / 255, blue: 64 / 255), Color(red: 21 / 255, green: 67 / 255, blue: 96 / 255)]), startPoint: .top, endPoint: .bottom).edgesIgnoringSafeArea(.all))
+        .navigationBarItems(leading: Button("Cancel") {
+            presentationMode.wrappedValue.dismiss()
+        })
+        .navigationBarBackButtonHidden(true)
+        
+    }
+
+    private func saveHabit() {
+        let newHabit = Habit(name: habitName, progress: 0.0)
+        habits.append(newHabit)
+        presentationMode.wrappedValue.dismiss()
+    }
+}
+
+
+
+
+
+
+
+
+
+struct FilledButton: ButtonStyle {
+    func makeBody(configuration: Self.Configuration) -> some View {
+        configuration.label
+            .padding()
+            .background(Color.green)
+            .foregroundColor(.white)
+            .cornerRadius(8)
+            .scaleEffect(configuration.isPressed ? 0.95 : 1)
+    }
+}
+
+
+
