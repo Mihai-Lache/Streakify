@@ -18,6 +18,7 @@ struct StreakifyApp: App
             LoginView()
             SignUpView()
         }
+        .modelContainer(for: Database.self)
         
     }
 }
