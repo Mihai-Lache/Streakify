@@ -1,8 +1,7 @@
 //
-//  UIInterfaceApp.swift
-//  UIInterface
+//  StreakifyApp.swift
+//  StreakifyApp
 //
-//  Created by Prathik Kallepalli on 4/22/24.
 //
 
 import SwiftUI

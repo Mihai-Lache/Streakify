@@ -1,10 +1,13 @@
 import SwiftUI
+import CoreData
 
 struct SignUpView: View {
     @Environment(\.presentationMode) var presentationMode  // Environment property to manage view dismissal
+    @State private var name: String = ""
     @State private var username: String = ""
     @State private var email: String = ""
     @State private var password: String = ""
+    @State private var confirmpass: String = ""
 
     let backgroundColor = Color(red: 11 / 255, green: 37 / 255, blue: 64 / 255)
     let darkTealColor = Color(red: 5 / 255, green: 102 / 255, blue: 141 / 255)
@@ -26,7 +29,7 @@ struct SignUpView: View {
                     .foregroundColor(.white) // Set the text color to black for better contrast
                     .padding(.bottom, 20) // Adds space below the text
                 
-                TextField("Name", text: $username)
+                TextField("Name", text: $name)
                     .padding()
                     .background(Color.white.opacity(1))
                     .cornerRadius(5.0)
@@ -50,7 +53,7 @@ struct SignUpView: View {
                     .cornerRadius(5.0)
                     .padding(.bottom, 15)
                 
-                SecureField("Confirm Password", text: $password)
+                SecureField("Confirm Password", text: $confirmpass)
                     .padding()
                     .background(Color.white.opacity(1))
                     .cornerRadius(5.0)
@@ -58,7 +61,8 @@ struct SignUpView: View {
 
                 Button("Sign Up") {
                     // Handle the sign up logic here
-                    print("Sign Up attempt...")
+//                    print("Sign Up attempt...")
+                    signUp()
                 }
                 .foregroundColor(.white)
                 .padding()
@@ -78,7 +82,39 @@ struct SignUpView: View {
         }
         .navigationBarHidden(true) // Optional: if you want to hide the navigation bar
     }
+    
+    private func signUp() {
+        guard password == confirmpass else {
+            // show/hide password mismatch error
+            return
+        }
+        
+        let newUser = User(context: viewContext)
+        newUser.name = name
+        newUser.username = username
+        newUser.email = email
+        newUser.password = password
+        
+        // Save changes to Core Data
+        do {
+            try viewContext.save()
+            print("User signed up successfully.")
+                    
+            // Navigate to the main page
+            // You should replace "MainPage" with the actual name of your main page view
+            // For demonstration purposes, this navigation method is used assuming the MainPage is also a SwiftUI View
+            let mainPageView = MainPage().environment(\.managedObjectContext, viewContext)
+            presentationMode.wrappedValue.dismiss()  // Dismiss the SignUpView
+            UIApplication.shared.windows.first?.rootViewController = UIHostingController(rootView: mainPageView)
+//            UIApplication.shared.windows.first?.makeKeyAndVisible()
+        } catch {
+            // Handle the error
+            print("Error saving user: \(error.localizedDescription)")
+        }
+    }
 }
+
+
 
 // Preview for SignUpView
 struct SignUpView_Previews: PreviewProvider {
