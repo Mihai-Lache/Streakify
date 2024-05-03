@@ -22,16 +22,19 @@ struct Habit: Identifiable {
     var streakCount: Int = 0
     var isCompleted: Bool = false // Track completion status
     var goalDays: Int = 100
-}
-
-
-
+        var totalDuration: Int = 100
+        var progressPercentage: Double {
+            let percentage = Double(streakCount) / Double(totalDuration) * 100
+            return min(percentage, 100)  // Ensure progress doesn't exceed 100%
+           }
+       }
 
 struct AddHabitView: View {
     @Environment(\.presentationMode) var presentationMode
     @Binding var habits: [Habit] // The habits list from the parent view
     @State private var habitName: String = ""
     @State private var habitProgress: CGFloat = 0.5 // Default progress
+    @State private var habitDuration: String = "" // Track habit duration
 
     var body: some View {
         NavigationView {
@@ -47,6 +50,21 @@ struct AddHabitView: View {
                     Text("100%")
                 }
                 .padding()
+
+                HStack {
+                    Text("Days the goal is being tracked")
+                        .foregroundColor(.primary)
+                        .padding(.trailing, 10)
+
+                    TextField("", text: $habitDuration)
+                        .padding(10)
+                        .background(Color(UIColor.systemGray6))
+                        .cornerRadius(5)
+                        .frame(width: 80)
+                        .keyboardType(.numberPad) // Set keyboard type to number pad
+                }
+                .padding(.horizontal)
+                .padding(.bottom, 10)
 
                 Button("Add Habit") {
                     let newHabit = Habit(name: habitName, progress: habitProgress)

@@ -77,7 +77,7 @@ struct HabitRow: View {
     @Binding var habits: [Habit]
 
     var body: some View {
-        HStack {
+        HStack(spacing: 8) { // Decreased spacing between buttons
             // Completion Toggle Button
             Button(action: {
                 if let index = habits.firstIndex(where: { $0.id == habit.id }) {
@@ -96,41 +96,50 @@ struct HabitRow: View {
             // Visual progress representation
             ZStack(alignment: .leading) {
                 Capsule().fill(Color.white.opacity(0.3))
-                    .frame(width: 100, height: 20)
+                    .frame(width: 140, height: 8) // Increased width of the progress bar
                 Capsule().fill(Color.green)
-                    .frame(width: 100 * habit.progress, height: 20)
+                    .frame(width: min(CGFloat(habit.progressPercentage / 100) * 140, 140), height: 8)  // Limit progress to 100%
+                
+                // Display progress percentage in the middle of the bar
+                Text("\(Int(habit.progressPercentage))%")
+                    .foregroundColor(.white)
+                    .font(.caption)
+                    .fontWeight(.bold)
+                    .position(x: min(CGFloat(habit.progressPercentage / 100) * 140, 140) / 2, y: 4) // Adjusted position for the percentage text
             }
-            .cornerRadius(10)
+            .frame(width: 140, height: 8) // Adjusted frame for the ZStack
+            .cornerRadius(4) // Adjusted corner radius for the progress bar
 
-            // Streak Counter Button
+            Spacer()
+
+            // Flame button with counter to signify streaks
             Button(action: {
-                if let index = habits.firstIndex(where: { $0.id == habit.id }) {
-                    habits[index].streakCount += 1  // Increment streak count
+                if habit.streakCount < habit.totalDuration {
+                    if let index = habits.firstIndex(where: { $0.id == habit.id }) {
+                        habits[index].streakCount += 1  // Increment streak count
+                        habits[index].progress = CGFloat(habits[index].streakCount) / CGFloat(habits[index].totalDuration)
+                    }
                 }
             }) {
                 ZStack {
                     Image(systemName: "flame.fill")
                         .resizable()
-                        .scaledToFit()
                         .frame(width: 24, height: 24)
                         .foregroundColor(.orange)
-
                     Text("\(habit.streakCount)")
+                        .foregroundColor(.white)
                         .font(.caption)
                         .fontWeight(.bold)
-                        .foregroundColor(.white)
-                        .shadow(color: .black, radius: 1, x: 0, y: 0)  // Shadow for better readability
                 }
             }
             .buttonStyle(PlainButtonStyle())
 
             // Notification button
             Button(action: {
-                NotificationManager.instance.scheduleNotification(title: "Reminder for \(habit.name)", subtitle: "Time to check your progress!", hour: 10, minute: 0)
+                // Implement notification action
             }) {
                 Image(systemName: "bell.fill")
                     .resizable()
-                    .scaledToFit()
                     .frame(width: 24, height: 24)
                     .foregroundColor(.blue)
             }
@@ -144,16 +153,15 @@ struct HabitRow: View {
             }) {
                 Image(systemName: "minus.circle.fill")
                     .resizable()
-                    .scaledToFit()
                     .frame(width: 24, height: 24)
                     .foregroundColor(.red)
             }
             .buttonStyle(PlainButtonStyle())
         }
-        .padding(.horizontal)
         .listRowBackground(Color(red: 11 / 255, green: 37 / 255, blue: 64 / 255))
     }
 }
+
 
 struct MainPageView_Previews: PreviewProvider {
     static var previews: some View {
