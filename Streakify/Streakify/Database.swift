@@ -9,7 +9,7 @@
 import Foundation
 import SwiftData
 
-class Database:Identifiable {
+class Database:Identifiable, Codable{
     var id: String
     var name: String
     var username: String
