@@ -63,6 +63,7 @@ struct LoginView: View {
                     .padding(.bottom, 30)
                     
                     Button("Login") {
+                        showLoginError = false // Reset the error state
                         UserManager.shared.loginUser(email: username, password: password) { success in
                             if success {
                                 navigatingToMainPage = true
