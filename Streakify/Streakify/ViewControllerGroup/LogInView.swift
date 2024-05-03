@@ -73,7 +73,7 @@ struct LoginView: View {
                         navigatingToSignUp = true
                     }
                     .foregroundColor(.white)
-                    
+
                     NavigationLink(destination: SignUpView(), isActive: $navigatingToSignUp) {
                         EmptyView()
                     }

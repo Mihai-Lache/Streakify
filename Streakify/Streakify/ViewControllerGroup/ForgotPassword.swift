@@ -4,7 +4,7 @@ struct ForgotPasswordView: View {
     @Environment(\.presentationMode) var presentationMode
     @State private var username: String = ""
     @State private var email: String = ""
-    
+
     let backgroundColor = Color(red: 11 / 255, green: 37 / 255, blue: 64 / 255) // Hex #0b2540
     let darkTealColor = Color(red: 5 / 255, green: 102 / 255, blue: 141 / 255) // Hex #05668d
 
