@@ -1,17 +1,23 @@
 import SwiftUI
 
 struct SignUpView: View {
-    @Environment(\.presentationMode) var presentationMode  // Environment property to manage view dismissal
+    @Environment(\.dismiss) var dismiss
+    
+    @State private var name: String = ""
     @State private var username: String = ""
     @State private var email: String = ""
     @State private var password: String = ""
-
+    @State private var showSignUpError = false
+    
+    @Binding var showLogin: Bool
+    
     let backgroundColor = Color(red: 11 / 255, green: 37 / 255, blue: 64 / 255)
     let darkTealColor = Color(red: 5 / 255, green: 102 / 255, blue: 141 / 255)
-
+    
     var body: some View {
         ZStack {
-            backgroundColor.edgesIgnoringSafeArea(.all)
+            backgroundColor.ignoresSafeArea()
+            
             VStack {
                 Image("Image")
                     .resizable()
@@ -19,31 +25,31 @@ struct SignUpView: View {
                     .frame(width: 200, height: 200)
                     .clipped()
                     .padding(.bottom, 20)
-
-                Text("Create Your Account")
-                    .font(.title) // Optional: Adjust the font size/style as needed
-                    .bold()
-                    .foregroundColor(.white) // Set the text color to black for better contrast
-                    .padding(.bottom, 20) // Adds space below the text
                 
-                TextField("Name", text: $username)
+                Text("Create Your Account")
+                    .font(.title)
+                    .bold()
+                    .foregroundColor(.white)
+                    .padding(.bottom, 20)
+                
+                TextField("Name", text: $name)
                     .padding()
                     .background(Color.white.opacity(1))
                     .cornerRadius(5.0)
                     .padding(.bottom, 15)
-
+                
                 TextField("Username", text: $username)
                     .padding()
                     .background(Color.white.opacity(1))
                     .cornerRadius(5.0)
                     .padding(.bottom, 15)
-
+                
                 TextField("Email", text: $email)
                     .padding()
                     .background(Color.white.opacity(1))
                     .cornerRadius(5.0)
                     .padding(.bottom, 15)
-
+                
                 SecureField("Password", text: $password)
                     .padding()
                     .background(Color.white.opacity(1))
@@ -55,34 +61,46 @@ struct SignUpView: View {
                     .background(Color.white.opacity(1))
                     .cornerRadius(5.0)
                     .padding(.bottom, 20)
-
+                
+                if showSignUpError {
+                    Text("Sign up failed. Please try again.")
+                        .foregroundColor(.red)
+                        .padding(.bottom, 10)
+                }
+                
                 Button("Sign Up") {
-                    // Handle the sign up logic here
-                    print("Sign Up attempt...")
+                    UserManager.shared.createUser(name: name, username: username, email: email, password: password) { success in
+                        if success {
+                            print("User created successfully")
+                            showLogin = true
+                            dismiss()
+                        } else {
+                            showSignUpError = true
+                        }
+                    }
                 }
                 .foregroundColor(.white)
                 .padding()
-                .background(darkTealColor) // A darker teal for the button background
+                .background(darkTealColor)
                 .cornerRadius(5.0)
                 .padding(.bottom, 10)
-
+                
                 Button("Already have an account? Log in") {
-                    // This button will dismiss the sign-up view and pop back to the login view
-                    presentationMode.wrappedValue.dismiss()
+                    showLogin = true
+                    dismiss()
                 }
                 .foregroundColor(.white)
-
+                
                 Spacer()
             }
             .padding()
         }
-        .navigationBarHidden(true) // Optional: if you want to hide the navigation bar
+        .navigationBarBackButtonHidden(true)
     }
 }
 
-// Preview for SignUpView
 struct SignUpView_Previews: PreviewProvider {
     static var previews: some View {
-        SignUpView()
+        SignUpView(showLogin: .constant(false))
     }
 }
