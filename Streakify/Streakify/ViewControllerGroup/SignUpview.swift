@@ -92,9 +92,23 @@ struct SignUpView: View {
         }
         .navigationBarHidden(true) // Optional: if you want to hide the navigation bar
     }
+    
     func registerUser(name: String, username: String, email: String, password: String){
         //handle registering a user
     }
+    
+    func valid() -> Bool {
+
+            if name.isEmpty || username.isEmpty || email.isEmpty || password.isEmpty || confirmed_password.isEmpty {
+                return false
+            }
+            
+            if password != confirmed_password {
+                return false
+            }
+            
+            return true
+        }
 }
 
 // Preview for SignUpView
