@@ -82,6 +82,7 @@ struct HabitRow: View {
             Button(action: {
                 if let index = habits.firstIndex(where: { $0.id == habit.id }) {
                     habits[index].isCompleted.toggle()  // Toggle completion status
+                    habits[index].progress = habits[index].isCompleted ? 1.0 : CGFloat(habits[index].streakCount) / CGFloat(habits[index].totalDuration)
                 }
             }) {
                 Image(systemName: habit.isCompleted ? "checkmark.circle.fill" : "circle")
@@ -96,19 +97,19 @@ struct HabitRow: View {
             // Visual progress representation
             ZStack(alignment: .leading) {
                 Capsule().fill(Color.white.opacity(0.3))
-                    .frame(width: 140, height: 8) // Increased width of the progress bar
+                    .frame(width: 140, height: 8)
                 Capsule().fill(Color.green)
-                    .frame(width: min(CGFloat(habit.progressPercentage / 100) * 140, 140), height: 8)  // Limit progress to 100%
+                    .frame(width: CGFloat(habit.progress) * 140, height: 8)
                 
-                // Display progress percentage in the middle of the bar
-                Text("\(Int(habit.progressPercentage))%")
+                // Display "Completed" or percentage in the middle of the bar
+                Text(habit.isCompleted ? "Completed" : "\(Int(habit.progressPercentage))%")
                     .foregroundColor(.white)
                     .font(.caption)
                     .fontWeight(.bold)
-                    .position(x: min(CGFloat(habit.progressPercentage / 100) * 140, 140) / 2, y: 4) // Adjusted position for the percentage text
+                    .position(x: 70, y: 4) // Centered position for the percentage text
             }
-            .frame(width: 140, height: 8) // Adjusted frame for the ZStack
-            .cornerRadius(4) // Adjusted corner radius for the progress bar
+            .frame(width: 140, height: 8)
+            .cornerRadius(4)
 
             Spacer()
 
@@ -161,6 +162,7 @@ struct HabitRow: View {
         .listRowBackground(Color(red: 11 / 255, green: 37 / 255, blue: 64 / 255))
     }
 }
+
 
 
 struct MainPageView_Previews: PreviewProvider {

@@ -36,51 +36,84 @@ struct AddHabitView: View {
     @State private var habitProgress: CGFloat = 0.5 // Default progress
     @State private var habitDuration: String = "" // Track habit duration
 
+    let backgroundColor = Color(red: 11 / 255, green: 37 / 255, blue: 64 / 255) // Hex #0b2540
+    let darkTealColor = Color(red: 5 / 255, green: 102 / 255, blue: 141 / 255) // Hex #05668d
+
     var body: some View {
         NavigationView {
-            VStack {
-                TextField("Habit Name", text: $habitName)
+            ZStack {
+                backgroundColor.edgesIgnoringSafeArea(.all)
+                VStack {
+                    TextField("Habit Name", text: $habitName)
+                        .padding()
+                        .background(Color.white)
+                        .cornerRadius(5.0)
+                        .padding(.bottom, 20)
+
+                    Slider(value: $habitProgress, in: 0...1, step: 0.1) {
+                        Text("Progress")
+                    } minimumValueLabel: {
+                        Text("0%").foregroundColor(.white)
+                    } maximumValueLabel: {
+                        Text("100%").foregroundColor(.white)
+                    }
                     .padding()
 
-                Slider(value: $habitProgress, in: 0...1, step: 0.1) {
-                    Text("Progress")
-                } minimumValueLabel: {
-                    Text("0%")
-                } maximumValueLabel: {
-                    Text("100%")
+                    HStack {
+                        Text("Days the goal is being tracked")
+                            .foregroundColor(.white)
+                            .padding(.trailing, 10)
+
+                        TextField("", text: $habitDuration)
+                            .padding(10)
+                            .background(Color(UIColor.systemGray6))
+                            .cornerRadius(5)
+                            .frame(width: 80)
+                            .keyboardType(.numberPad) // Set keyboard type to number pad
+                    }
+                    .padding(.horizontal)
+                    .padding(.bottom, 10)
+
+                    Button("Add Habit") {
+                        let newHabit = Habit(name: habitName, progress: habitProgress)
+                        habits.append(newHabit)
+                        presentationMode.wrappedValue.dismiss()
+                    }
+                    .padding()
+                    .background(darkTealColor)
+                    .foregroundColor(.white)
+                    .cornerRadius(5.0)
+                    .disabled(habitName.isEmpty) // Disable button if habit name is empty
                 }
                 .padding()
-
-                HStack {
-                    Text("Days the goal is being tracked")
-                        .foregroundColor(.primary)
-                        .padding(.trailing, 10)
-
-                    TextField("", text: $habitDuration)
-                        .padding(10)
-                        .background(Color(UIColor.systemGray6))
-                        .cornerRadius(5)
-                        .frame(width: 80)
-                        .keyboardType(.numberPad) // Set keyboard type to number pad
-                }
-                .padding(.horizontal)
-                .padding(.bottom, 10)
-
-                Button("Add Habit") {
-                    let newHabit = Habit(name: habitName, progress: habitProgress)
-                    habits.append(newHabit)
-                    presentationMode.wrappedValue.dismiss()
-                }
-                .padding()
-                .disabled(habitName.isEmpty) // Disable button if habit name is empty
             }
-            .navigationBarTitle("Add New Habit", displayMode: .inline)
-            .navigationBarItems(leading: Button(action: {
-                presentationMode.wrappedValue.dismiss()
-            }) {
-                Image(systemName: "arrow.left")
-                Text("Back")
-            })
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .principal) {
+                    Text("Add New Habit")
+                        .font(.system(size: 28, weight: .bold)) // Custom larger font size
+                        .foregroundColor(.white)
+                }
+                ToolbarItem(placement: .navigationBarLeading) {
+                    Button(action: {
+                        presentationMode.wrappedValue.dismiss()
+                    }) {
+                        HStack {
+                            Image(systemName: "arrow.left")
+                            Text("Back")
+                        }
+                        .foregroundColor(.white)
+                    }
+                }
+            }
         }
     }
 }
+
+// Preview provider
+struct AddHabitView_Previews: PreviewProvider {
+    static var previews: some View {
+        AddHabitView(habits: .constant([]))
+    }
+}
+
