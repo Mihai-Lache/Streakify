@@ -3,6 +3,7 @@ import SwiftUI
 struct MainPageView: View {
     @State private var habits: [Habit] = []
     @State private var showingAddHabit = false
+    @State private var showingSettings = false  // State to control navigation to the SettingsView
     let username: String = "User"
     let backgroundColor = Color(red: 11 / 255, green: 37 / 255, blue: 64 / 255)
     let progressTrackColor = Color.white.opacity(0.3)
@@ -43,8 +44,26 @@ struct MainPageView: View {
                     .listStyle(PlainListStyle())
 
                     HStack {
+                        // Settings Button
+                        Button(action: {
+                            showingSettings.toggle()
+                        }) {
+                            HStack {
+                                Image(systemName: "gearshape.fill")
+                                    .resizable()
+                                    .frame(width: 24, height: 24)
+                                Text("Settings")
+                            }
+                            .foregroundColor(.white)
+                        }
+                        .padding()
+                        .sheet(isPresented: $showingSettings) {
+                            SettingsView()
+                        }
+
                         Spacer()
 
+                        // Add Habit Button
                         Button(action: {
                             showingAddHabit.toggle()
                         }) {
@@ -162,8 +181,6 @@ struct HabitRow: View {
         .listRowBackground(Color(red: 11 / 255, green: 37 / 255, blue: 64 / 255))
     }
 }
-
-
 
 struct MainPageView_Previews: PreviewProvider {
     static var previews: some View {

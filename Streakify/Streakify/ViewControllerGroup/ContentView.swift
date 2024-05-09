@@ -116,4 +116,3 @@ struct AddHabitView_Previews: PreviewProvider {
         AddHabitView(habits: .constant([]))
     }
 }
-

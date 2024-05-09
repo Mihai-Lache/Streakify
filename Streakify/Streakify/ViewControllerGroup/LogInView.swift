@@ -14,7 +14,6 @@ struct LoginView: View {
         NavigationView {
             ZStack {
                 backgroundColor.edgesIgnoringSafeArea(.all)
-
                 VStack {
                     Image("Image")
                         .resizable()
@@ -73,7 +72,7 @@ struct LoginView: View {
                         navigatingToSignUp = true
                     }
                     .foregroundColor(.white)
-
+                    
                     NavigationLink(destination: SignUpView(), isActive: $navigatingToSignUp) {
                         EmptyView()
                     }
