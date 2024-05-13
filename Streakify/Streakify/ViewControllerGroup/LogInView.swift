@@ -14,7 +14,6 @@ struct LoginView: View {
         NavigationView {
             ZStack {
                 backgroundColor.edgesIgnoringSafeArea(.all)
-
                 VStack {
                     Image("Image")
                         .resizable()
