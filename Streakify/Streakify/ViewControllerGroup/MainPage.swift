@@ -101,8 +101,11 @@ struct HabitRow: View {
             Button(action: {
                 if let index = habits.firstIndex(where: { $0.id == habit.id }) {
                     habits[index].isCompleted.toggle()  // Toggle completion status
-                    habits[index].progress = habits[index].isCompleted ? 1.0 : CGFloat(habits[index].streakCount) / CGFloat(habits[index].totalDuration)
+                    if habits[index].isCompleted {
+                        habits[index].streakCount = habits[index].totalDuration  // Ensure progress reaches 100%
+                    }
                 }
+
             }) {
                 Image(systemName: habit.isCompleted ? "checkmark.circle.fill" : "circle")
                     .foregroundColor(habit.isCompleted ? .green : .gray)
@@ -133,11 +136,14 @@ struct HabitRow: View {
             Spacer()
 
             // Flame button with counter to signify streaks
+            // Flame button with counter to signify streaks
             Button(action: {
-                if habit.streakCount < habit.totalDuration {
-                    if let index = habits.firstIndex(where: { $0.id == habit.id }) {
+                if let index = habits.firstIndex(where: { $0.id == habit.id }) {
+                    if !habits[index].isCompleted && habits[index].streakCount < habits[index].totalDuration {
                         habits[index].streakCount += 1  // Increment streak count
-                        habits[index].progress = CGFloat(habits[index].streakCount) / CGFloat(habits[index].totalDuration)
+                        if habits[index].streakCount == habits[index].totalDuration {
+                            habits[index].isCompleted = true  // Automatically mark as completed if the total duration is reached
+                        }
                     }
                 }
             }) {
@@ -145,13 +151,14 @@ struct HabitRow: View {
                     Image(systemName: "flame.fill")
                         .resizable()
                         .frame(width: 24, height: 24)
-                        .foregroundColor(.orange)
+                        .foregroundColor(habit.isCompleted ? .gray : .orange)
                     Text("\(habit.streakCount)")
                         .foregroundColor(.white)
                         .font(.caption)
                         .fontWeight(.bold)
                 }
             }
+
             .buttonStyle(PlainButtonStyle())
 
             // Notification button

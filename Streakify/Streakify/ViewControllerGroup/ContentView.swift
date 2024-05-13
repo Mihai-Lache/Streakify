@@ -18,23 +18,24 @@ struct RootView_Previews: PreviewProvider {
 struct Habit: Identifiable {
     let id = UUID()
     var name: String
-    var progress: CGFloat
     var streakCount: Int = 0
-    var isCompleted: Bool = false // Track completion status
-    var goalDays: Int = 100
-        var totalDuration: Int = 100
-        var progressPercentage: Double {
-            let percentage = Double(streakCount) / Double(totalDuration) * 100
-            return min(percentage, 100)  // Ensure progress doesn't exceed 100%
-           }
-       }
+    var isCompleted: Bool = false
+    var totalDuration: Int
+
+    var progress: CGFloat {
+        return CGFloat(streakCount) / CGFloat(totalDuration)
+    }
+
+    var progressPercentage: Int {
+        return min(Int((progress * 100).rounded()), 100)
+    }
+}
 
 struct AddHabitView: View {
     @Environment(\.presentationMode) var presentationMode
     @Binding var habits: [Habit] // The habits list from the parent view
     @State private var habitName: String = ""
-    @State private var habitProgress: CGFloat = 0.5 // Default progress
-    @State private var habitDuration: String = "" // Track habit duration
+    @State private var habitDuration: String = "" // Track habit duration as string for TextField input
 
     let backgroundColor = Color(red: 11 / 255, green: 37 / 255, blue: 64 / 255) // Hex #0b2540
     let darkTealColor = Color(red: 5 / 255, green: 102 / 255, blue: 141 / 255) // Hex #05668d
@@ -50,21 +51,12 @@ struct AddHabitView: View {
                         .cornerRadius(5.0)
                         .padding(.bottom, 20)
 
-                    Slider(value: $habitProgress, in: 0...1, step: 0.1) {
-                        Text("Progress")
-                    } minimumValueLabel: {
-                        Text("0%").foregroundColor(.white)
-                    } maximumValueLabel: {
-                        Text("100%").foregroundColor(.white)
-                    }
-                    .padding()
-
                     HStack {
-                        Text("Days the goal is being tracked")
+                        Text("Total Days:")
                             .foregroundColor(.white)
                             .padding(.trailing, 10)
 
-                        TextField("", text: $habitDuration)
+                        TextField("Number of days", text: $habitDuration)
                             .padding(10)
                             .background(Color(UIColor.systemGray6))
                             .cornerRadius(5)
@@ -72,18 +64,20 @@ struct AddHabitView: View {
                             .keyboardType(.numberPad) // Set keyboard type to number pad
                     }
                     .padding(.horizontal)
-                    .padding(.bottom, 10)
+                    .padding(.bottom, 20)
 
                     Button("Add Habit") {
-                        let newHabit = Habit(name: habitName, progress: habitProgress)
-                        habits.append(newHabit)
+                        if let totalDays = Int(habitDuration), !habitName.isEmpty {
+                            let newHabit = Habit(name: habitName, streakCount: 0, isCompleted: false, totalDuration: totalDays)
+                            habits.append(newHabit)
+                        }
                         presentationMode.wrappedValue.dismiss()
                     }
                     .padding()
-                    .background(darkTealColor)
+                    .background(habitName.isEmpty || Int(habitDuration) == nil ? Color.gray : darkTealColor)
                     .foregroundColor(.white)
                     .cornerRadius(5.0)
-                    .disabled(habitName.isEmpty) // Disable button if habit name is empty
+                    .disabled(habitName.isEmpty || Int(habitDuration) == nil) // Disable button if habit name or duration is empty
                 }
                 .padding()
             }
@@ -91,7 +85,7 @@ struct AddHabitView: View {
             .toolbar {
                 ToolbarItem(placement: .principal) {
                     Text("Add New Habit")
-                        .font(.system(size: 28, weight: .bold)) // Custom larger font size
+                        .font(.system(size: 28, weight: .bold))
                         .foregroundColor(.white)
                 }
                 ToolbarItem(placement: .navigationBarLeading) {
@@ -109,6 +103,7 @@ struct AddHabitView: View {
         }
     }
 }
+
 
 // Preview provider
 struct AddHabitView_Previews: PreviewProvider {
