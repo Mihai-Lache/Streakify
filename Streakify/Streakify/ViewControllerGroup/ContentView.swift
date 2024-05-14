@@ -22,7 +22,10 @@ struct Habit: Identifiable {
     var streakCount: Int = 0
     var isCompleted: Bool = false
     var totalDuration: Int
-    var completionDates: [Date] = [] // New property for tracking completion dates
+    var completionDates: [Date] = []
+    var notificationFrequency: String = "None"
+    var notificationTime: Date?
+    var notificationDays: [String] = []
 
     var progress: CGFloat {
         return CGFloat(streakCount) / CGFloat(totalDuration)

@@ -103,6 +103,7 @@ struct HabitRow: View {
     @Binding var habits: [Habit]
 
     @State private var showingDetail = false
+    @State private var showingNotificationSettings = false
 
     var body: some View {
         HStack(spacing: 8) {
@@ -186,7 +187,7 @@ struct HabitRow: View {
             .buttonStyle(PlainButtonStyle())
 
             Button(action: {
-                // Implement notification action
+                showingNotificationSettings = true
             }) {
                 Image(systemName: "bell.fill")
                     .resizable()
@@ -194,6 +195,9 @@ struct HabitRow: View {
                     .foregroundColor(.blue)
             }
             .buttonStyle(PlainButtonStyle())
+            .sheet(isPresented: $showingNotificationSettings) {
+                NotificationSettingsView(habit: $habits[habits.firstIndex(where: { $0.id == habit.id })!])
+            }
 
             Button(action: {
                 if let index = habits.firstIndex(where: { $0.id == habit.id }) {
@@ -212,7 +216,6 @@ struct HabitRow: View {
         .cornerRadius(10)
     }
 }
-
 
 
 
@@ -371,3 +374,92 @@ struct HistoryView: View {
 }
 
 
+
+//NOTIS
+
+
+struct NotificationSettingsView: View {
+    @Binding var habit: Habit
+    @Environment(\.presentationMode) var presentationMode
+
+    let frequencies = ["None", "Daily", "Weekly", "Monthly"]
+    let daysOfWeek = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"]
+
+    @State private var enableNotifications: Bool
+    @State private var selectedFrequency: String
+    @State private var selectedTime: Date
+    @State private var selectedDays: Set<String>
+
+    init(habit: Binding<Habit>) {
+        self._habit = habit
+        self._enableNotifications = State(initialValue: habit.wrappedValue.notificationFrequency != "None")
+        self._selectedFrequency = State(initialValue: habit.wrappedValue.notificationFrequency)
+        self._selectedTime = State(initialValue: habit.wrappedValue.notificationTime ?? Date())
+        self._selectedDays = State(initialValue: Set(habit.wrappedValue.notificationDays))
+    }
+
+    var body: some View {
+        NavigationView {
+            Form {
+                Section(header: Text("Notification Settings")) {
+                    Toggle(isOn: $enableNotifications) {
+                        Text("Enable Notifications")
+                    }
+
+                    if enableNotifications {
+                        Picker("Frequency", selection: $selectedFrequency) {
+                            ForEach(frequencies, id: \.self) { frequency in
+                                Text(frequency).tag(frequency)
+                            }
+                        }
+                        .pickerStyle(SegmentedPickerStyle())
+
+                        DatePicker("Time", selection: $selectedTime, displayedComponents: .hourAndMinute)
+
+                        if selectedFrequency == "Weekly" {
+                            VStack(alignment: .leading) {
+                                Text("Days")
+                                ForEach(daysOfWeek, id: \.self) { day in
+                                    Button(action: {
+                                        if selectedDays.contains(day) {
+                                            selectedDays.remove(day)
+                                        } else {
+                                            selectedDays.insert(day)
+                                        }
+                                    }) {
+                                        HStack {
+                                            Text(day)
+                                            Spacer()
+                                            if selectedDays.contains(day) {
+                                                Image(systemName: "checkmark")
+                                                    .foregroundColor(.blue)
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            .navigationBarTitle("Notification Settings", displayMode: .inline)
+            .navigationBarItems(
+                leading: Button("Cancel") {
+                    presentationMode.wrappedValue.dismiss()
+                },
+                trailing: Button("Save") {
+                    habit.notificationFrequency = enableNotifications ? selectedFrequency : "None"
+                    habit.notificationTime = enableNotifications ? selectedTime : nil
+                    habit.notificationDays = enableNotifications && selectedFrequency == "Weekly" ? Array(selectedDays) : []
+                    presentationMode.wrappedValue.dismiss()
+                }
+            )
+        }
+    }
+}
+
+struct NotificationSettingsView_Previews: PreviewProvider {
+    static var previews: some View {
+        NotificationSettingsView(habit: .constant(Habit(name: "Sample Habit", description: "Sample Description", totalDuration: 30)))
+    }
+}
