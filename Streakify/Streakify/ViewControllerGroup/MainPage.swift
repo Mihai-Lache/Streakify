@@ -98,12 +98,10 @@ struct MainPageView: View {
     }
 }
 
-
-
 struct HabitRow: View {
     var habit: Habit
     @Binding var habits: [Habit]
-    
+
     @State private var showingDetail = false
 
     var body: some View {
@@ -113,8 +111,12 @@ struct HabitRow: View {
                     habits[index].isCompleted.toggle()
                     if habits[index].isCompleted {
                         habits[index].streakCount = habits[index].totalDuration
+                        if !habits[index].completionDates.contains(where: { Calendar.current.isDate($0, inSameDayAs: Date()) }) {
+                            habits[index].completionDates.append(Date()) // Track completion date
+                        }
                     } else {
                         habits[index].streakCount = 0  // Reset streak count
+                        habits[index].completionDates.removeAll(where: { Calendar.current.isDate($0, inSameDayAs: Date()) }) // Remove today's completion date
                     }
                 }
             }) {
@@ -163,6 +165,9 @@ struct HabitRow: View {
                         habits[index].streakCount += 1
                         if habits[index].streakCount == habits[index].totalDuration {
                             habits[index].isCompleted = true
+                            if !habits[index].completionDates.contains(where: { Calendar.current.isDate($0, inSameDayAs: Date()) }) {
+                                habits[index].completionDates.append(Date()) // Track completion date
+                            }
                         }
                     }
                 }
@@ -210,6 +215,7 @@ struct HabitRow: View {
 
 
 
+
 struct MainPageView_Previews: PreviewProvider {
     static var previews: some View {
         MainPageView()
@@ -222,6 +228,7 @@ struct HabitDetailView: View {
     @Binding var habits: [Habit]
 
     @State private var showingEditHabit = false
+    @State private var showingHistory = false
 
     var body: some View {
         ScrollView {
@@ -283,7 +290,7 @@ struct HabitDetailView: View {
                     )
 
                     Button(action: {
-                        // View history action
+                        showingHistory = true
                     }) {
                         Text("View History")
                             .foregroundColor(.white)
@@ -292,6 +299,14 @@ struct HabitDetailView: View {
                             .background(Color.gray)
                             .cornerRadius(10)
                     }
+                    .background(
+                        NavigationLink(
+                            destination: HistoryView(completionDates: habit.formattedCompletionDates),
+                            isActive: $showingHistory,
+                            label: { EmptyView() }
+                        )
+                        .hidden()
+                    )
 
                     Button(action: {
                         if let index = habits.firstIndex(where: { $0.id == habit.id }) {
@@ -311,25 +326,48 @@ struct HabitDetailView: View {
             .padding()
             .background(Color(red: 11 / 255, green: 37 / 255, blue: 64 / 255))
             .foregroundColor(.white)
-            .cornerRadius(10)
-            .padding()
         }
         .background(Color(red: 11 / 255, green: 37 / 255, blue: 64 / 255).edgesIgnoringSafeArea(.all))
     }
 }
 
-// Extend Habit model for dummy date formatting
-extension Habit {
-    var startDateFormatted: String {
-        let formatter = DateFormatter()
-        formatter.dateStyle = .medium
-        return formatter.string(from: Date())  // Dummy date for illustration
-    }
 
-    var endDateFormatted: String {
-        let formatter = DateFormatter()
-        formatter.dateStyle = .medium
-        return formatter.string(from: Date().addingTimeInterval(Double(totalDuration * 86400)))  // Dummy end date for illustration
+
+struct HistoryView: View {
+    var completionDates: [String]
+
+    var body: some View {
+        VStack(alignment: .leading) {
+            Text("Completion History")
+                .font(.largeTitle)
+                .fontWeight(.bold)
+                .padding(.bottom)
+
+            if completionDates.isEmpty {
+                Text("No completion history available.")
+                    .foregroundColor(.white)
+                    .padding()
+            } else {
+                List {
+                    ForEach(completionDates, id: \.self) { date in
+                        Text(date)
+                            .padding()
+                            .background(Color(red: 11 / 255, green: 37 / 255, blue: 64 / 255))
+                            .cornerRadius(10)
+                            .foregroundColor(.white)
+                            .listRowBackground(Color.clear)  // Ensure background color matches
+                    }
+                }
+                .listStyle(PlainListStyle())
+                .background(Color(red: 11 / 255, green: 37 / 255, blue: 64 / 255))
+            }
+
+            Spacer()
+        }
+        .padding()
+        .background(Color(red: 11 / 255, green: 37 / 255, blue: 64 / 255).edgesIgnoringSafeArea(.all))
+        .foregroundColor(.white)
     }
 }
+
 
