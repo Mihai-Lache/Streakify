@@ -240,7 +240,7 @@ struct HabitDetailView: View {
                     .progressViewStyle(LinearProgressViewStyle(tint: Color.green))
                     .padding(.vertical)
 
-                // Start date and end date (dummy dates for illustration)
+                // Start date and end date
                 Text("Start Date: \(habit.startDateFormatted)")
                     .font(.body)
                 Text("End Date: \(habit.endDateFormatted)")
@@ -311,8 +311,10 @@ struct HabitDetailView: View {
             .padding()
             .background(Color(red: 11 / 255, green: 37 / 255, blue: 64 / 255))
             .foregroundColor(.white)
+            .cornerRadius(10)
+            .padding()
         }
-        .edgesIgnoringSafeArea(.all)
+        .background(Color(red: 11 / 255, green: 37 / 255, blue: 64 / 255).edgesIgnoringSafeArea(.all))
     }
 }
 

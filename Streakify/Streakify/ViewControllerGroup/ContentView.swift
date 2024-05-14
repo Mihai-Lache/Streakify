@@ -47,46 +47,61 @@ struct AddHabitView: View {
         NavigationView {
             ZStack {
                 backgroundColor.edgesIgnoringSafeArea(.all)
-                VStack {
-                    TextField("Habit Name", text: $habitName)
-                        .padding()
-                        .background(Color.white)
-                        .cornerRadius(5.0)
-                        .padding(.bottom, 20)
-
-                    TextField("Description", text: $habitDescription)
-                        .padding()
-                        .background(Color.white)
-                        .cornerRadius(5.0)
-                        .padding(.bottom, 20)
-
-                    HStack {
-                        Text("Total Days:")
+                VStack(spacing: 20) {
+                    VStack(alignment: .leading, spacing: 10) {
+                        Text("Habit Name")
                             .foregroundColor(.white)
-                            .padding(.trailing, 10)
-
-                        TextField("Number of days", text: $habitDuration)
-                            .padding(10)
-                            .background(Color(UIColor.systemGray6))
-                            .cornerRadius(5)
-                            .frame(width: 80)
-                            .keyboardType(.numberPad) // Set keyboard type to number pad
+                            .font(.headline)
+                        
+                        TextField("Enter habit name", text: $habitName)
+                            .padding()
+                            .background(Color.white)
+                            .cornerRadius(10.0)
                     }
                     .padding(.horizontal)
-                    .padding(.bottom, 20)
+                    
+                    VStack(alignment: .leading, spacing: 10) {
+                        Text("Description")
+                            .foregroundColor(.white)
+                            .font(.headline)
+                        
+                        TextField("Enter habit description", text: $habitDescription)
+                            .padding()
+                            .background(Color.white)
+                            .cornerRadius(10.0)
+                    }
+                    .padding(.horizontal)
 
-                    Button("Add Habit") {
+                    VStack(alignment: .leading, spacing: 10) {
+                        Text("Total Days")
+                            .foregroundColor(.white)
+                            .font(.headline)
+                        
+                        TextField("Enter number of days", text: $habitDuration)
+                            .padding()
+                            .background(Color.white)
+                            .cornerRadius(10.0)
+                            .keyboardType(.numberPad)
+                    }
+                    .padding(.horizontal)
+
+                    Button(action: {
                         if let totalDays = Int(habitDuration), !habitName.isEmpty {
                             let newHabit = Habit(name: habitName, description: habitDescription, streakCount: 0, isCompleted: false, totalDuration: totalDays)
                             habits.append(newHabit)
+                            presentationMode.wrappedValue.dismiss()
                         }
-                        presentationMode.wrappedValue.dismiss()
+                    }) {
+                        Text("Add Habit")
+                            .font(.headline)
+                            .foregroundColor(.white)
+                            .padding()
+                            .frame(maxWidth: .infinity)
+                            .background(habitName.isEmpty || Int(habitDuration) == nil ? Color.gray : darkTealColor)
+                            .cornerRadius(10)
+                            .padding(.horizontal)
                     }
-                    .padding()
-                    .background(habitName.isEmpty || Int(habitDuration) == nil ? Color.gray : darkTealColor)
-                    .foregroundColor(.white)
-                    .cornerRadius(5.0)
-                    .disabled(habitName.isEmpty || Int(habitDuration) == nil) // Disable button if habit name or duration is empty
+                    .disabled(habitName.isEmpty || Int(habitDuration) == nil)
                 }
                 .padding()
             }
