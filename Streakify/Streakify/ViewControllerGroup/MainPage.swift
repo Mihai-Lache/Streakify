@@ -1,5 +1,7 @@
 import SwiftUI
 
+import SwiftUI
+
 struct MainPageView: View {
     @State private var habits: [Habit] = []
     @State private var showingAddHabit = false
@@ -97,6 +99,7 @@ struct MainPageView: View {
 }
 
 
+
 struct HabitRow: View {
     var habit: Habit
     @Binding var habits: [Habit]
@@ -145,7 +148,7 @@ struct HabitRow: View {
             }
             .background(
                 NavigationLink(
-                    destination: HabitDetailView(habit: habit),
+                    destination: HabitDetailView(habit: habit, habits: $habits),
                     isActive: $showingDetail,
                     label: { EmptyView() }
                 )
@@ -214,40 +217,117 @@ struct MainPageView_Previews: PreviewProvider {
 }
 
 
-
 struct HabitDetailView: View {
     var habit: Habit
+    @Binding var habits: [Habit]
+
+    @State private var showingEditHabit = false
 
     var body: some View {
-        VStack(alignment: .leading) {
-            Text(habit.name)
-                .font(.largeTitle)
-                .fontWeight(.bold)
-                .padding()
+        ScrollView {
+            VStack(alignment: .leading, spacing: 20) {
+                // Habit name
+                Text(habit.name)
+                    .font(.largeTitle)
+                    .fontWeight(.bold)
+                    .padding(.top)
 
-            Text("Streak: \(habit.streakCount) / \(habit.totalDuration)")
-                .font(.title2)
-                .padding([.leading, .bottom])
+                // Streak and progress bar
+                Text("Streak: \(habit.streakCount) / \(habit.totalDuration)")
+                    .font(.title2)
 
-            ProgressView(value: habit.progress)
-                .progressViewStyle(LinearProgressViewStyle(tint: Color.green))
-                .padding([.leading, .trailing, .bottom])
+                ProgressView(value: habit.progress)
+                    .progressViewStyle(LinearProgressViewStyle(tint: Color.green))
+                    .padding(.vertical)
 
-            Spacer()
+                // Start date and end date (dummy dates for illustration)
+                Text("Start Date: \(habit.startDateFormatted)")
+                    .font(.body)
+                Text("End Date: \(habit.endDateFormatted)")
+                    .font(.body)
 
-            Button(action: {
-                // Additional actions for the habit
-            }) {
-                Text("Additional Options")
-                    .foregroundColor(.white)
-                    .padding()
-                    .background(Color.blue)
-                    .cornerRadius(10)
+                // Description
+                Text("Description")
+                    .font(.title3)
+                    .fontWeight(.semibold)
+                Text(habit.description)
+                    .font(.body)
+
+                // Motivational quote
+                Text("Motivational Quote")
+                    .font(.title3)
+                    .fontWeight(.semibold)
+                Text("“The journey of a thousand miles begins with one step.” - Lao Tzu")
+                    .font(.body)
+                    .italic()
+
+                // Actions
+                VStack(spacing: 10) {
+                    Button(action: {
+                        showingEditHabit = true
+                    }) {
+                        Text("Edit Habit")
+                            .foregroundColor(.white)
+                            .padding()
+                            .frame(maxWidth: .infinity)
+                            .background(Color.blue)
+                            .cornerRadius(10)
+                    }
+                    .background(
+                        NavigationLink(
+                            destination: EditHabitView(habit: habit, habits: $habits),
+                            isActive: $showingEditHabit,
+                            label: { EmptyView() }
+                        )
+                        .hidden()
+                    )
+
+                    Button(action: {
+                        // View history action
+                    }) {
+                        Text("View History")
+                            .foregroundColor(.white)
+                            .padding()
+                            .frame(maxWidth: .infinity)
+                            .background(Color.gray)
+                            .cornerRadius(10)
+                    }
+
+                    Button(action: {
+                        if let index = habits.firstIndex(where: { $0.id == habit.id }) {
+                            habits.remove(at: index)
+                        }
+                    }) {
+                        Text("Delete Habit")
+                            .foregroundColor(.white)
+                            .padding()
+                            .frame(maxWidth: .infinity)
+                            .background(Color.red)
+                            .cornerRadius(10)
+                    }
+                }
+                .padding(.top)
             }
             .padding()
+            .background(Color(red: 11 / 255, green: 37 / 255, blue: 64 / 255))
+            .foregroundColor(.white)
         }
-        .background(Color(red: 11 / 255, green: 37 / 255, blue: 64 / 255))
-        .foregroundColor(.white)
         .edgesIgnoringSafeArea(.all)
     }
 }
+
+// Extend Habit model for dummy date formatting
+extension Habit {
+    var startDateFormatted: String {
+        let formatter = DateFormatter()
+        formatter.dateStyle = .medium
+        return formatter.string(from: Date())  // Dummy date for illustration
+    }
+
+    var endDateFormatted: String {
+        let formatter = DateFormatter()
+        formatter.dateStyle = .medium
+        return formatter.string(from: Date().addingTimeInterval(Double(totalDuration * 86400)))  // Dummy end date for illustration
+    }
+}
+
