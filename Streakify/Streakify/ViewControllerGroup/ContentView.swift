@@ -58,6 +58,7 @@ extension Habit {
 
 
 
+
 struct AddHabitView: View {
     @Environment(\.presentationMode) var presentationMode
     @Binding var habits: [Habit]
@@ -83,9 +84,9 @@ struct AddHabitView: View {
                             .foregroundColor(.white)
                             .font(.headline)
                         
-                        TextField("Enter habit name", text: $habitName)
+                        PlaceholderTextField(placeholder: Text("Enter habit name").foregroundColor(.white.opacity(0.7)), text: $habitName)
                             .padding()
-                            .background(Color.white.opacity(1))
+                            .background(Color.white.opacity(0.2))
                             .cornerRadius(10.0)
                             .foregroundColor(.white)
                     }
@@ -96,9 +97,9 @@ struct AddHabitView: View {
                             .foregroundColor(.white)
                             .font(.headline)
                         
-                        TextField("Enter habit description", text: $habitDescription)
+                        PlaceholderTextField(placeholder: Text("Enter habit description").foregroundColor(.white.opacity(0.7)), text: $habitDescription)
                             .padding()
-                            .background(Color.white.opacity(1))
+                            .background(Color.white.opacity(0.2))
                             .cornerRadius(10.0)
                             .foregroundColor(.white)
                     }
@@ -109,9 +110,9 @@ struct AddHabitView: View {
                             .foregroundColor(.white)
                             .font(.headline)
                         
-                        TextField("Enter number of days", text: $habitDuration)
+                        PlaceholderTextField(placeholder: Text("Enter number of days").foregroundColor(.white.opacity(0.7)), text: $habitDuration)
                             .padding()
-                            .background(Color.white.opacity(1))
+                            .background(Color.white.opacity(0.2))
                             .cornerRadius(10.0)
                             .foregroundColor(.white)
                             .keyboardType(.numberPad)
@@ -217,6 +218,19 @@ struct AddHabitView_Previews: PreviewProvider {
         AddHabitView(habits: .constant([]))
     }
 }
+
+struct PlaceholderTextField: View {
+    var placeholder: Text
+    @Binding var text: String
+
+    var body: some View {
+        ZStack(alignment: .leading) {
+            if text.isEmpty { placeholder }
+            TextField("", text: $text)
+        }
+    }
+}
+
 
 
 
