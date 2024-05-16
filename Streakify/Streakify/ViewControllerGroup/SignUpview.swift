@@ -1,10 +1,14 @@
 import SwiftUI
+import SwiftData
 
 struct SignUpView: View {
     @Environment(\.presentationMode) var presentationMode  // Environment property to manage view dismissal
+    @Environment(\.modelContext) private var context
+    @State private var name: String = ""
     @State private var username: String = ""
     @State private var email: String = ""
     @State private var password: String = ""
+    @State private var confirmed_password: String = ""
 
     let backgroundColor = Color(red: 11 / 255, green: 37 / 255, blue: 64 / 255)
     let darkTealColor = Color(red: 5 / 255, green: 102 / 255, blue: 141 / 255)
@@ -25,8 +29,8 @@ struct SignUpView: View {
                     .bold()
                     .foregroundColor(.white) // Set the text color to black for better contrast
                     .padding(.bottom, 20) // Adds space below the text
-
-                TextField("Name", text: $username)
+                
+                TextField("Name", text: $name)
                     .padding()
                     .background(Color.white.opacity(1))
                     .cornerRadius(5.0)
@@ -50,14 +54,24 @@ struct SignUpView: View {
                     .cornerRadius(5.0)
                     .padding(.bottom, 15)
 
-                SecureField("Confirm Password", text: $password)
+                SecureField("Confirm Password", text: $confirmed_password)
                     .padding()
                     .background(Color.white.opacity(1))
                     .cornerRadius(5.0)
                     .padding(.bottom, 20)
 
                 Button("Sign Up") {
-                    // Handle the sign up logic here
+                    let namedb = $name.wrappedValue
+                    let usernamedb = $username.wrappedValue
+                    let emaildb = $email.wrappedValue
+                    let passworddb = $password.wrappedValue
+                    
+                    if $name.wrappedValue == "" || $username.wrappedValue == "" || $email.wrappedValue == "" || $password.wrappedValue == "" {
+                        
+                    }
+                    else{
+                        registerUser(name: namedb, username: usernamedb, email: emaildb, password: passworddb)
+                    }
                     print("Sign Up attempt...")
                 }
                 .foregroundColor(.white)
@@ -78,6 +92,23 @@ struct SignUpView: View {
         }
         .navigationBarHidden(true) // Optional: if you want to hide the navigation bar
     }
+    
+    func registerUser(name: String, username: String, email: String, password: String){
+        //handle registering a user
+    }
+    
+    func valid() -> Bool {
+
+            if name.isEmpty || username.isEmpty || email.isEmpty || password.isEmpty || confirmed_password.isEmpty {
+                return false
+            }
+            
+            if password != confirmed_password {
+                return false
+            }
+            
+            return true
+        }
 }
 
 // Preview for SignUpView
