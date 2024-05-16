@@ -60,13 +60,18 @@ extension Habit {
 
 struct AddHabitView: View {
     @Environment(\.presentationMode) var presentationMode
-    @Binding var habits: [Habit] // The habits list from the parent view
+    @Binding var habits: [Habit]
     @State private var habitName: String = ""
-    @State private var habitDuration: String = "" // Track habit duration as string for TextField input
-    @State private var habitDescription: String = "" // Track habit description
+    @State private var habitDescription: String = ""
+    @State private var habitDuration: String = ""
+    @State private var startDate: Date = Date()
+    @State private var notificationFrequency: String = "None"
+    @State private var enableNotifications: Bool = false
 
-    let backgroundColor = Color(red: 11 / 255, green: 37 / 255, blue: 64 / 255) // Hex #0b2540
-    let darkTealColor = Color(red: 5 / 255, green: 102 / 255, blue: 141 / 255) // Hex #05668d
+    let frequencies = ["None", "Daily", "Weekly", "Monthly"]
+
+    let backgroundColor = Color(red: 11 / 255, green: 37 / 255, blue: 64 / 255) // Old background color
+    let darkTealColor = Color(red: 5 / 255, green: 102 / 255, blue: 141 / 255) // Button color
 
     var body: some View {
         NavigationView {
@@ -80,8 +85,9 @@ struct AddHabitView: View {
                         
                         TextField("Enter habit name", text: $habitName)
                             .padding()
-                            .background(Color.white)
+                            .background(Color.white.opacity(1))
                             .cornerRadius(10.0)
+                            .foregroundColor(.white)
                     }
                     .padding(.horizontal)
                     
@@ -92,8 +98,9 @@ struct AddHabitView: View {
                         
                         TextField("Enter habit description", text: $habitDescription)
                             .padding()
-                            .background(Color.white)
+                            .background(Color.white.opacity(1))
                             .cornerRadius(10.0)
+                            .foregroundColor(.white)
                     }
                     .padding(.horizontal)
 
@@ -104,15 +111,67 @@ struct AddHabitView: View {
                         
                         TextField("Enter number of days", text: $habitDuration)
                             .padding()
-                            .background(Color.white)
+                            .background(Color.white.opacity(1))
                             .cornerRadius(10.0)
+                            .foregroundColor(.white)
                             .keyboardType(.numberPad)
+                    }
+                    .padding(.horizontal)
+
+                    VStack(alignment: .leading, spacing: 10) {
+                        Text("Start Date")
+                            .foregroundColor(.white)
+                            .font(.headline)
+                        
+                        DatePicker("Select Start Date", selection: $startDate, displayedComponents: .date)
+                            .padding()
+                            .background(Color.white.opacity(0.2))
+                            .cornerRadius(10.0)
+                            .foregroundColor(.white)
+                    }
+                    .padding(.horizontal)
+
+                    VStack(alignment: .leading, spacing: 10) {
+                        Text("Notifications")
+                            .foregroundColor(.white)
+                            .font(.headline)
+                        
+                        Toggle(isOn: $enableNotifications) {
+                            Text("Enable Notifications")
+                                .foregroundColor(.white)
+                        }
+                        .padding()
+                        .background(Color.white.opacity(0.2))
+                        .cornerRadius(10.0)
+                        
+                        if enableNotifications {
+                            Picker("Frequency", selection: $notificationFrequency) {
+                                ForEach(frequencies, id: \.self) { frequency in
+                                    Text(frequency).tag(frequency)
+                                }
+                            }
+                            .pickerStyle(SegmentedPickerStyle())
+                            .padding()
+                            .background(Color.white.opacity(0.2))
+                            .cornerRadius(10.0)
+                            .foregroundColor(.white)
+                        }
                     }
                     .padding(.horizontal)
 
                     Button(action: {
                         if let totalDays = Int(habitDuration), !habitName.isEmpty {
-                            let newHabit = Habit(name: habitName, description: habitDescription, streakCount: 0, isCompleted: false, totalDuration: totalDays)
+                            let newHabit = Habit(
+                                name: habitName,
+                                description: habitDescription,
+                                streakCount: 0,
+                                isCompleted: false,
+                                totalDuration: totalDays,
+                                completionDates: [],
+                                notificationFrequency: enableNotifications ? notificationFrequency : "None",
+                                notificationTime: enableNotifications ? Date() : nil,
+                                notificationDays: []
+                            )
                             habits.append(newHabit)
                             presentationMode.wrappedValue.dismiss()
                         }
@@ -153,12 +212,13 @@ struct AddHabitView: View {
     }
 }
 
-// Preview provider
 struct AddHabitView_Previews: PreviewProvider {
     static var previews: some View {
         AddHabitView(habits: .constant([]))
     }
 }
+
+
 
 
 struct EditHabitView: View {
