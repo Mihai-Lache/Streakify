@@ -20,6 +20,7 @@
 		46E5B1D12BD9598D0022248A /* SignUpview.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46E5B1D02BD9598D0022248A /* SignUpview.swift */; };
 		46E5B1D32BD959A80022248A /* MainPage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46E5B1D22BD959A80022248A /* MainPage.swift */; };
 		46E5B1D52BD959CC0022248A /* ForgotPassword.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46E5B1D42BD959CC0022248A /* ForgotPassword.swift */; };
+		7F0777562BDC2300001484E4 /* UserManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7F0777552BDC2300001484E4 /* UserManager.swift */; };
 		C90C72812BDB862C00F7E6A1 /* Database.swift in Sources */ = {isa = PBXBuildFile; fileRef = C90C72802BDB862C00F7E6A1 /* Database.swift */; };
 /* End PBXBuildFile section */
 
@@ -57,6 +58,7 @@
 		46E5B1D02BD9598D0022248A /* SignUpview.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SignUpview.swift; sourceTree = "<group>"; };
 		46E5B1D22BD959A80022248A /* MainPage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainPage.swift; sourceTree = "<group>"; };
 		46E5B1D42BD959CC0022248A /* ForgotPassword.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ForgotPassword.swift; sourceTree = "<group>"; };
+		7F0777552BDC2300001484E4 /* UserManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserManager.swift; sourceTree = "<group>"; };
 		C90C72802BDB862C00F7E6A1 /* Database.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Database.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -108,6 +110,7 @@
 		46E5B19E2BD958910022248A /* Streakify */ = {
 			isa = PBXGroup;
 			children = (
+				7F0777542BDC22EC001484E4 /* UserManager */,
 				46E5B19F2BD958910022248A /* StreakifyApp.swift */,
 				46E5B1D62BD95A0F0022248A /* ViewControllerGroup */,
 				46E5B1A32BD958920022248A /* Assets.xcassets */,
@@ -154,6 +157,14 @@
 				46E5B1D42BD959CC0022248A /* ForgotPassword.swift */,
 			);
 			path = ViewControllerGroup;
+			sourceTree = "<group>";
+		};
+		7F0777542BDC22EC001484E4 /* UserManager */ = {
+			isa = PBXGroup;
+			children = (
+				7F0777552BDC2300001484E4 /* UserManager.swift */,
+			);
+			path = UserManager;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -294,6 +305,7 @@
 				46E5B1A22BD958910022248A /* ContentView.swift in Sources */,
 				C90C72812BDB862C00F7E6A1 /* Database.swift in Sources */,
 				46E5B1D32BD959A80022248A /* MainPage.swift in Sources */,
+				7F0777562BDC2300001484E4 /* UserManager.swift in Sources */,
 				46E5B1A02BD958910022248A /* StreakifyApp.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
