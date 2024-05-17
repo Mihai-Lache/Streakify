@@ -1,9 +1,10 @@
 import SwiftUI
 
 struct RootView: View {
+    @State private var showLogin = true
     var body: some View {
         NavigationView {
-            LoginView()
+            LoginView(showLogin: $showLogin)
         }
     }
 }
