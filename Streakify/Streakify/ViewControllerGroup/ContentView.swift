@@ -35,6 +35,8 @@ struct AddHabitView: View {
     @State private var habitName: String = ""
     @State private var habitProgress: CGFloat = 0.5 // Default progress
     @State private var habitDuration: String = "" // Track habit duration
+    @State private var navigateToMainPage = false
+
 
     let backgroundColor = Color(red: 11 / 255, green: 37 / 255, blue: 64 / 255) // Hex #0b2540
     let darkTealColor = Color(red: 5 / 255, green: 102 / 255, blue: 141 / 255) // Hex #05668d
@@ -73,6 +75,8 @@ struct AddHabitView: View {
                     }
                     .padding(.horizontal)
                     .padding(.bottom, 10)
+                    
+                    
 
                     Button("Add Habit") {
                         let newHabit = Habit(name: habitName, progress: habitProgress)
