@@ -9,6 +9,7 @@
 import Foundation
 import SwiftData
 
+@Model
 class Database:Identifiable {
     var id: String
     var name: String

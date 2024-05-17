@@ -24,5 +24,7 @@ struct ContentView: View {
         } else {
             SignUpView(showLogin: $showLogin)
         }
+
+
     }
 }
