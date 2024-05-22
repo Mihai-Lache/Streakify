@@ -1,15 +1,17 @@
 import SwiftUI
 
+import SwiftUI
+
 struct MainPageView: View {
     @State private var habits: [Habit] = []
     @State private var showingAddHabit = false
-    @State private var showingSettings = false  // State to control navigation to the SettingsView
+    @State private var showingSettings = false
     let username: String = "User"
     let backgroundColor = Color(red: 11 / 255, green: 37 / 255, blue: 64 / 255)
     let progressTrackColor = Color.white.opacity(0.3)
     let progressColor = Color.green
 
-    @Environment(\.presentationMode) var presentationMode  // For dismissing the view
+    @Environment(\.presentationMode) var presentationMode
 
     var body: some View {
         NavigationView {
@@ -27,7 +29,7 @@ struct MainPageView: View {
                         Spacer()
 
                         Button("Sign Out") {
-                            presentationMode.wrappedValue.dismiss()  // Dismisses the current view, simulating "sign out"
+                            presentationMode.wrappedValue.dismiss()
                         }
                         .foregroundColor(.white)
                         .padding(10)
@@ -38,13 +40,14 @@ struct MainPageView: View {
                     List {
                         ForEach(habits) { habit in
                             HabitRow(habit: habit, habits: $habits)
+                                .listRowBackground(backgroundColor)
                         }
                         .onDelete(perform: deleteHabits)
                     }
                     .listStyle(PlainListStyle())
+                    .background(backgroundColor)
 
                     HStack {
-                        // Settings Button
                         Button(action: {
                             showingSettings.toggle()
                         }) {
@@ -57,13 +60,14 @@ struct MainPageView: View {
                             .foregroundColor(.white)
                         }
                         .padding()
+                        .background(Color.blue)
+                        .cornerRadius(10)
                         .sheet(isPresented: $showingSettings) {
                             SettingsView()
                         }
 
                         Spacer()
 
-                        // Add Habit Button
                         Button(action: {
                             showingAddHabit.toggle()
                         }) {
@@ -76,10 +80,13 @@ struct MainPageView: View {
                             .foregroundColor(.white)
                         }
                         .padding()
+                        .background(Color.green)
+                        .cornerRadius(10)
                         .sheet(isPresented: $showingAddHabit) {
                             AddHabitView(habits: $habits)
                         }
                     }
+                    .padding(.horizontal)
                 }
             }
             .navigationBarHidden(true)
@@ -95,54 +102,73 @@ struct HabitRow: View {
     var habit: Habit
     @Binding var habits: [Habit]
 
+    @State private var showingDetail = false
+    @State private var showingNotificationSettings = false
+
     var body: some View {
-        HStack(spacing: 8) { // Decreased spacing between buttons
-            // Completion Toggle Button
+        HStack(spacing: 8) {
             Button(action: {
                 if let index = habits.firstIndex(where: { $0.id == habit.id }) {
-                    habits[index].isCompleted.toggle()  // Toggle completion status
+                    habits[index].isCompleted.toggle()
                     if habits[index].isCompleted {
-                        habits[index].streakCount = habits[index].totalDuration  // Ensure progress reaches 100%
+                        habits[index].streakCount = habits[index].totalDuration
+                        if !habits[index].completionDates.contains(where: { Calendar.current.isDate($0, inSameDayAs: Date()) }) {
+                            habits[index].completionDates.append(Date()) // Track completion date
+                        }
+                    } else {
+                        habits[index].streakCount = 0  // Reset streak count
+                        habits[index].completionDates.removeAll(where: { Calendar.current.isDate($0, inSameDayAs: Date()) }) // Remove today's completion date
                     }
                 }
-
             }) {
                 Image(systemName: habit.isCompleted ? "checkmark.circle.fill" : "circle")
                     .foregroundColor(habit.isCompleted ? .green : .gray)
                     .imageScale(.large)
             }
 
-            Text(habit.name)
-                .foregroundColor(.white)
-                .strikethrough(habit.isCompleted, color: .white)  // Apply strikethrough if completed
-
-            // Visual progress representation
-            ZStack(alignment: .leading) {
-                Capsule().fill(Color.white.opacity(0.3))
-                    .frame(width: 140, height: 8)
-                Capsule().fill(Color.green)
-                    .frame(width: CGFloat(habit.progress) * 140, height: 8)
-                
-                // Display "Completed" or percentage in the middle of the bar
-                Text(habit.isCompleted ? "Completed" : "\(Int(habit.progressPercentage))%")
+            VStack(alignment: .leading) {
+                Text(habit.name)
                     .foregroundColor(.white)
-                    .font(.caption)
-                    .fontWeight(.bold)
-                    .position(x: 70, y: 4) // Centered position for the percentage text
+                    .strikethrough(habit.isCompleted, color: .white)
+
+                ZStack(alignment: .leading) {
+                    Capsule().fill(Color.white.opacity(0.3))
+                        .frame(width: 140, height: 8)
+                    Capsule().fill(Color.green)
+                        .frame(width: CGFloat(habit.progress) * 140, height: 8)
+
+                    Text(habit.isCompleted ? "Completed" : "\(Int(habit.progressPercentage))%")
+                        .foregroundColor(.white)
+                        .font(.caption)
+                        .fontWeight(.bold)
+                        .position(x: 70, y: 4)
+                }
+                .frame(width: 140, height: 8)
+                .cornerRadius(4)
             }
-            .frame(width: 140, height: 8)
-            .cornerRadius(4)
+            .onTapGesture {
+                showingDetail = true
+            }
+            .background(
+                NavigationLink(
+                    destination: HabitDetailView(habit: habit, habits: $habits),
+                    isActive: $showingDetail,
+                    label: { EmptyView() }
+                )
+                .hidden()
+            )
 
             Spacer()
 
-            // Flame button with counter to signify streaks
-            // Flame button with counter to signify streaks
             Button(action: {
                 if let index = habits.firstIndex(where: { $0.id == habit.id }) {
                     if !habits[index].isCompleted && habits[index].streakCount < habits[index].totalDuration {
-                        habits[index].streakCount += 1  // Increment streak count
+                        habits[index].streakCount += 1
                         if habits[index].streakCount == habits[index].totalDuration {
-                            habits[index].isCompleted = true  // Automatically mark as completed if the total duration is reached
+                            habits[index].isCompleted = true
+                            if !habits[index].completionDates.contains(where: { Calendar.current.isDate($0, inSameDayAs: Date()) }) {
+                                habits[index].completionDates.append(Date()) // Track completion date
+                            }
                         }
                     }
                 }
@@ -158,12 +184,10 @@ struct HabitRow: View {
                         .fontWeight(.bold)
                 }
             }
-
             .buttonStyle(PlainButtonStyle())
 
-            // Notification button
             Button(action: {
-                // Implement notification action
+                showingNotificationSettings = true
             }) {
                 Image(systemName: "bell.fill")
                     .resizable()
@@ -171,8 +195,10 @@ struct HabitRow: View {
                     .foregroundColor(.blue)
             }
             .buttonStyle(PlainButtonStyle())
+            .sheet(isPresented: $showingNotificationSettings) {
+                NotificationSettingsView(habit: $habits[habits.firstIndex(where: { $0.id == habit.id })!])
+            }
 
-            // Delete button
             Button(action: {
                 if let index = habits.firstIndex(where: { $0.id == habit.id }) {
                     habits.remove(at: index)
@@ -185,12 +211,255 @@ struct HabitRow: View {
             }
             .buttonStyle(PlainButtonStyle())
         }
-        .listRowBackground(Color(red: 11 / 255, green: 37 / 255, blue: 64 / 255))
+        .padding(.vertical, 8)
+        .background(Color(red: 11 / 255, green: 37 / 255, blue: 64 / 255))
+        .cornerRadius(10)
     }
 }
+
+
 
 struct MainPageView_Previews: PreviewProvider {
     static var previews: some View {
         MainPageView()
+    }
+}
+
+
+struct HabitDetailView: View {
+    var habit: Habit
+    @Binding var habits: [Habit]
+
+    @State private var showingEditHabit = false
+    @State private var showingHistory = false
+
+    var body: some View {
+        ScrollView {
+            VStack(alignment: .leading, spacing: 20) {
+                // Habit name
+                Text(habit.name)
+                    .font(.largeTitle)
+                    .fontWeight(.bold)
+                    .padding(.top)
+
+                // Streak and progress bar
+                Text("Streak: \(habit.streakCount) / \(habit.totalDuration)")
+                    .font(.title2)
+
+                ProgressView(value: habit.progress)
+                    .progressViewStyle(LinearProgressViewStyle(tint: Color.green))
+                    .padding(.vertical)
+
+                // Start date and end date
+                Text("Start Date: \(habit.startDateFormatted)")
+                    .font(.body)
+                Text("End Date: \(habit.endDateFormatted)")
+                    .font(.body)
+
+                // Description
+                Text("Description")
+                    .font(.title3)
+                    .fontWeight(.semibold)
+                Text(habit.description)
+                    .font(.body)
+
+                // Motivational quote
+                Text("Motivational Quote")
+                    .font(.title3)
+                    .fontWeight(.semibold)
+                Text("“The journey of a thousand miles begins with one step.” - Lao Tzu")
+                    .font(.body)
+                    .italic()
+
+                // Actions
+                VStack(spacing: 10) {
+                    Button(action: {
+                        showingEditHabit = true
+                    }) {
+                        Text("Edit Habit")
+                            .foregroundColor(.white)
+                            .padding()
+                            .frame(maxWidth: .infinity)
+                            .background(Color.blue)
+                            .cornerRadius(10)
+                    }
+                    .background(
+                        NavigationLink(
+                            destination: EditHabitView(habit: habit, habits: $habits),
+                            isActive: $showingEditHabit,
+                            label: { EmptyView() }
+                        )
+                        .hidden()
+                    )
+
+                    Button(action: {
+                        showingHistory = true
+                    }) {
+                        Text("View History")
+                            .foregroundColor(.white)
+                            .padding()
+                            .frame(maxWidth: .infinity)
+                            .background(Color.gray)
+                            .cornerRadius(10)
+                    }
+                    .background(
+                        NavigationLink(
+                            destination: HistoryView(completionDates: habit.formattedCompletionDates),
+                            isActive: $showingHistory,
+                            label: { EmptyView() }
+                        )
+                        .hidden()
+                    )
+
+                    Button(action: {
+                        if let index = habits.firstIndex(where: { $0.id == habit.id }) {
+                            habits.remove(at: index)
+                        }
+                    }) {
+                        Text("Delete Habit")
+                            .foregroundColor(.white)
+                            .padding()
+                            .frame(maxWidth: .infinity)
+                            .background(Color.red)
+                            .cornerRadius(10)
+                    }
+                }
+                .padding(.top)
+            }
+            .padding()
+            .background(Color(red: 11 / 255, green: 37 / 255, blue: 64 / 255))
+            .foregroundColor(.white)
+        }
+        .background(Color(red: 11 / 255, green: 37 / 255, blue: 64 / 255).edgesIgnoringSafeArea(.all))
+    }
+}
+
+
+
+struct HistoryView: View {
+    var completionDates: [String]
+
+    var body: some View {
+        VStack(alignment: .leading) {
+            Text("Completion History")
+                .font(.largeTitle)
+                .fontWeight(.bold)
+                .padding(.bottom)
+
+            if completionDates.isEmpty {
+                Text("No completion history available.")
+                    .foregroundColor(.white)
+                    .padding()
+            } else {
+                List {
+                    ForEach(completionDates, id: \.self) { date in
+                        Text(date)
+                            .padding()
+                            .background(Color(red: 11 / 255, green: 37 / 255, blue: 64 / 255))
+                            .cornerRadius(10)
+                            .foregroundColor(.white)
+                            .listRowBackground(Color.clear)  // Ensure background color matches
+                    }
+                }
+                .listStyle(PlainListStyle())
+                .background(Color(red: 11 / 255, green: 37 / 255, blue: 64 / 255))
+            }
+
+            Spacer()
+        }
+        .padding()
+        .background(Color(red: 11 / 255, green: 37 / 255, blue: 64 / 255).edgesIgnoringSafeArea(.all))
+        .foregroundColor(.white)
+    }
+}
+
+
+
+//NOTIS
+
+
+struct NotificationSettingsView: View {
+    @Binding var habit: Habit
+    @Environment(\.presentationMode) var presentationMode
+
+    let frequencies = ["None", "Daily", "Weekly", "Monthly"]
+    let daysOfWeek = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"]
+
+    @State private var enableNotifications: Bool
+    @State private var selectedFrequency: String
+    @State private var selectedTime: Date
+    @State private var selectedDays: Set<String>
+
+    init(habit: Binding<Habit>) {
+        self._habit = habit
+        self._enableNotifications = State(initialValue: habit.wrappedValue.notificationFrequency != "None")
+        self._selectedFrequency = State(initialValue: habit.wrappedValue.notificationFrequency)
+        self._selectedTime = State(initialValue: habit.wrappedValue.notificationTime ?? Date())
+        self._selectedDays = State(initialValue: Set(habit.wrappedValue.notificationDays))
+    }
+
+    var body: some View {
+        NavigationView {
+            Form {
+                Section(header: Text("Notification Settings")) {
+                    Toggle(isOn: $enableNotifications) {
+                        Text("Enable Notifications")
+                    }
+
+                    if enableNotifications {
+                        Picker("Frequency", selection: $selectedFrequency) {
+                            ForEach(frequencies, id: \.self) { frequency in
+                                Text(frequency).tag(frequency)
+                            }
+                        }
+                        .pickerStyle(SegmentedPickerStyle())
+
+                        DatePicker("Time", selection: $selectedTime, displayedComponents: .hourAndMinute)
+
+                        if selectedFrequency == "Weekly" {
+                            VStack(alignment: .leading) {
+                                Text("Days")
+                                ForEach(daysOfWeek, id: \.self) { day in
+                                    Button(action: {
+                                        if selectedDays.contains(day) {
+                                            selectedDays.remove(day)
+                                        } else {
+                                            selectedDays.insert(day)
+                                        }
+                                    }) {
+                                        HStack {
+                                            Text(day)
+                                            Spacer()
+                                            if selectedDays.contains(day) {
+                                                Image(systemName: "checkmark")
+                                                    .foregroundColor(.blue)
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            .navigationBarTitle("Notification Settings", displayMode: .inline)
+            .navigationBarItems(
+                leading: Button("Cancel") {
+                    presentationMode.wrappedValue.dismiss()
+                },
+                trailing: Button("Save") {
+                    habit.notificationFrequency = enableNotifications ? selectedFrequency : "None"
+                    habit.notificationTime = enableNotifications ? selectedTime : nil
+                    habit.notificationDays = enableNotifications && selectedFrequency == "Weekly" ? Array(selectedDays) : []
+                    presentationMode.wrappedValue.dismiss()
+                }
+            )
+        }
+    }
+}
+
+struct NotificationSettingsView_Previews: PreviewProvider {
+    static var previews: some View {
+        NotificationSettingsView(habit: .constant(Habit(name: "Sample Habit", description: "Sample Description", totalDuration: 30)))
     }
 }
