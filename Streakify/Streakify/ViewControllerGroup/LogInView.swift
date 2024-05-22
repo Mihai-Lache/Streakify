@@ -3,7 +3,7 @@ import SwiftUI
 struct LoginView: View {
     @State private var username: String = ""
     @State private var password: String = ""
-    @State private var navigatingToMainPage = false  // State to control navigation to the MainPage
+    @State private var navigatingToMainPage = false  
     @State private var navigatingToSignUp = false  // State to control navigation to the SignUpView
     @State private var navigatingToForgotPassword = false  // State to control navigation to the ForgotPasswordView
 
