@@ -6,7 +6,7 @@
 
 import Foundation
 
-class Database: Identifiable, Codable {
+class Database: Identifiable {
     var id: String
     var name: String
     var username: String
