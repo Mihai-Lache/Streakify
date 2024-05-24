@@ -1,4 +1,3 @@
-//
 //  UserManager.swift
 //  Streakify
 //
@@ -35,23 +34,28 @@ class UserManager {
         }
     }
     
-    func loginUser(email: String, password: String, completion: @escaping (Bool) -> Void) {
+    func loginUser(username: String, password: String, completion: @escaping (Bool, Database?) -> Void) {
         // Retrieve the user from the database
-        guard let user = getUserByEmail(email) else {
-            completion(false)
+        guard let user = getUserByUsername(username) else {
+            completion(false, nil)
             return
         }
         
         // Verify the password
         if verifyPassword(password, hashedPassword: user.password) {
-            completion(true)
+            completion(true, user)
         } else {
-            completion(false)
+            completion(false, nil)
         }
     }
+
     
     private func getUserByEmail(_ email: String) -> Database? {
         return users.first(where: { $0.email == email })
+    }
+
+    private func getUserByUsername(_ username: String) -> Database? {
+        return users.first(where: { $0.username == username })
     }
     
     private func saveUser(_ user: Database) -> Bool {

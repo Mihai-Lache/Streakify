@@ -7,7 +7,8 @@ struct LoginView: View {
     @State private var navigatingToSignUp = false
     @State private var navigatingToForgotPassword = false
     @State private var showLoginError = false
-    @State private var navigateToSignUp = false
+    
+    @State private var loggedInUser: Database? = nil
     
     @Binding var showLogin: Bool
     
@@ -15,7 +16,7 @@ struct LoginView: View {
     let darkTealColor = Color(red: 5 / 255, green: 102 / 255, blue: 141 / 255)
     
     var body: some View {
-        NavigationStack {
+        NavigationView {
             ZStack {
                 backgroundColor.ignoresSafeArea()
                 
@@ -51,37 +52,44 @@ struct LoginView: View {
                         .padding(.bottom, 5)
                     
                     if showLoginError {
-                        Text("Invalid email or password")
+                        Text("Invalid username or password")
                             .foregroundColor(.red)
                             .padding(.bottom, 10)
                     }
                     
-                    Button("Forgot password?") {
+                    Button(action: {
                         navigatingToForgotPassword = true
-                    }
-                    .foregroundColor(.white)
-                    .padding(.bottom, 30)
+                    }, label: {
+                        Text("Forgot password?")
+                            .foregroundColor(.white)
+                            .padding(.bottom, 30)
+                    })
                     
-                    Button("Login") {
+                    Button(action: {
                         showLoginError = false // Reset the error state
-                        UserManager.shared.loginUser(email: username, password: password) { success in
+                        UserManager.shared.loginUser(username: username, password: password) { success, user in
                             if success {
+                                loggedInUser = user
                                 navigatingToMainPage = true
                             } else {
                                 showLoginError = true
                             }
                         }
-                    }
-                    .foregroundColor(.white)
-                    .padding()
-                    .background(darkTealColor)
-                    .cornerRadius(5.0)
-                    .padding(.bottom, 15)
+                    }, label: {
+                        Text("Login")
+                            .foregroundColor(.white)
+                            .padding()
+                            .background(darkTealColor)
+                            .cornerRadius(5.0)
+                            .padding(.bottom, 15)
+                    })
                     
-                    Button("Need an account? Sign Up Here!") {
-                        navigateToSignUp = true
-                    }
-                    .foregroundColor(.white)
+                    Button(action: {
+                        navigatingToSignUp = true
+                    }, label: {
+                        Text("Need an account? Sign Up Here!")
+                            .foregroundColor(.white)
+                    })
                     
                     Spacer()
                 }
@@ -96,16 +104,24 @@ struct LoginView: View {
                 }
             }
             .accentColor(.white)
-            .navigationDestination(isPresented: $navigatingToForgotPassword) {
-                ForgotPasswordView()
-            }
-            .navigationDestination(isPresented: $navigatingToMainPage) {
-                MainPageView()
-            }
+            .background(
+                NavigationLink(
+                    destination: ForgotPasswordView(),
+                    isActive: $navigatingToForgotPassword,
+                    label: { EmptyView() }
+                )
+            )
+            .background(
+                NavigationLink(
+                    destination: MainPageView(username: username),
+                    isActive: $navigatingToMainPage,
+                    label: { EmptyView() }
+                )
+            )
             .background(
                 NavigationLink(
                     destination: SignUpView(showLogin: $showLogin),
-                    isActive: $navigateToSignUp,
+                    isActive: $navigatingToSignUp,
                     label: { EmptyView() }
                 )
             )

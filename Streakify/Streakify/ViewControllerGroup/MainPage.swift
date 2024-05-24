@@ -1,12 +1,11 @@
 import SwiftUI
 
-import SwiftUI
-
 struct MainPageView: View {
     @State private var habits: [Habit] = []
     @State private var showingAddHabit = false
     @State private var showingSettings = false
-    let username: String = "User"
+    
+    let username: String
     let backgroundColor = Color(red: 11 / 255, green: 37 / 255, blue: 64 / 255)
     let progressTrackColor = Color.white.opacity(0.3)
     let progressColor = Color.green
@@ -217,14 +216,11 @@ struct HabitRow: View {
     }
 }
 
-
-
 struct MainPageView_Previews: PreviewProvider {
     static var previews: some View {
-        MainPageView()
+        MainPageView(username: "User")
     }
 }
-
 
 struct HabitDetailView: View {
     var habit: Habit
@@ -236,13 +232,11 @@ struct HabitDetailView: View {
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 20) {
-                // Habit name
                 Text(habit.name)
                     .font(.largeTitle)
                     .fontWeight(.bold)
                     .padding(.top)
 
-                // Streak and progress bar
                 Text("Streak: \(habit.streakCount) / \(habit.totalDuration)")
                     .font(.title2)
 
@@ -250,20 +244,17 @@ struct HabitDetailView: View {
                     .progressViewStyle(LinearProgressViewStyle(tint: Color.green))
                     .padding(.vertical)
 
-                // Start date and end date
                 Text("Start Date: \(habit.startDateFormatted)")
                     .font(.body)
                 Text("End Date: \(habit.endDateFormatted)")
                     .font(.body)
 
-                // Description
                 Text("Description")
                     .font(.title3)
                     .fontWeight(.semibold)
                 Text(habit.description)
                     .font(.body)
 
-                // Motivational quote
                 Text("Motivational Quote")
                     .font(.title3)
                     .fontWeight(.semibold)
@@ -271,7 +262,6 @@ struct HabitDetailView: View {
                     .font(.body)
                     .italic()
 
-                // Actions
                 VStack(spacing: 10) {
                     Button(action: {
                         showingEditHabit = true
@@ -334,8 +324,6 @@ struct HabitDetailView: View {
     }
 }
 
-
-
 struct HistoryView: View {
     var completionDates: [String]
 
@@ -358,7 +346,7 @@ struct HistoryView: View {
                             .background(Color(red: 11 / 255, green: 37 / 255, blue: 64 / 255))
                             .cornerRadius(10)
                             .foregroundColor(.white)
-                            .listRowBackground(Color.clear)  // Ensure background color matches
+                            .listRowBackground(Color.clear)
                     }
                 }
                 .listStyle(PlainListStyle())
@@ -372,11 +360,6 @@ struct HistoryView: View {
         .foregroundColor(.white)
     }
 }
-
-
-
-//NOTIS
-
 
 struct NotificationSettingsView: View {
     @Binding var habit: Habit

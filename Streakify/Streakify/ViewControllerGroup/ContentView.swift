@@ -336,4 +336,3 @@ struct EditHabitView_Previews: PreviewProvider {
     }
 }
 
-

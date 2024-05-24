@@ -1,15 +1,12 @@
-//
 //  Database.swift
 //  Streakify
 //
 //  Created by Arya on 4/25/24.
 //
 
-//This DataBase is used to store User LogIn information, including 
 import Foundation
-import SwiftData
 
-class Database:Identifiable {
+class Database: Identifiable {
     var id: String
     var name: String
     var username: String
@@ -17,7 +14,7 @@ class Database:Identifiable {
     var password: String
     var habits: [Habit]
     
-    init(name: String, username: String, email: String, password: String){
+    init(name: String, username: String, email: String, password: String) {
         self.id = UUID().uuidString
         self.name = name
         self.username = username
@@ -26,4 +23,11 @@ class Database:Identifiable {
         self.habits = []
     }
     
+    func addHabit(_ habit: Habit) {
+        habits.append(habit)
+    }
+    
+    func removeHabit(_ habit: Habit) {
+        habits.removeAll { $0.id == habit.id }
+    }
 }
