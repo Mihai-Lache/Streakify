@@ -16,50 +16,6 @@ struct RootView_Previews: PreviewProvider {
     }
 }
 
-struct Habit: Identifiable {
-    let id = UUID()
-    var name: String
-    var description: String = "Default description"
-    var streakCount: Int = 0
-    var isCompleted: Bool = false
-    var totalDuration: Int
-    var completionDates: [Date] = []
-    var notificationFrequency: String = "None"
-    var notificationTime: Date?
-    var notificationDays: [String] = []
-
-    var progress: CGFloat {
-        return CGFloat(streakCount) / CGFloat(totalDuration)
-    }
-
-    var progressPercentage: Int {
-        return min(Int((progress * 100).rounded()), 100)
-    }
-}
-
-extension Habit {
-    var startDateFormatted: String {
-        let formatter = DateFormatter()
-        formatter.dateStyle = .medium
-        return formatter.string(from: Date())  // Dummy date for illustration
-    }
-
-    var endDateFormatted: String {
-        let formatter = DateFormatter()
-        formatter.dateStyle = .medium
-        return formatter.string(from: Date().addingTimeInterval(Double(totalDuration * 86400)))  // Dummy end date for illustration
-    }
-
-    var formattedCompletionDates: [String] {
-        let formatter = DateFormatter()
-        formatter.dateStyle = .medium
-        return completionDates.map { formatter.string(from: $0) }
-    }
-}
-
-
-
-
 struct AddHabitView: View {
     @Environment(\.presentationMode) var presentationMode
     @Binding var habits: [Habit]
@@ -221,8 +177,6 @@ struct AddHabitView_Previews: PreviewProvider {
     }
 }
 
-
-
 struct PlaceholderTextField: View {
     var placeholder: Text
     @Binding var text: String
@@ -234,10 +188,6 @@ struct PlaceholderTextField: View {
         }
     }
 }
-
-
-
-
 
 struct EditHabitView: View {
     @Environment(\.presentationMode) var presentationMode
@@ -455,4 +405,3 @@ struct HistoryView: View {
         .foregroundColor(.white)
     }
 }
-

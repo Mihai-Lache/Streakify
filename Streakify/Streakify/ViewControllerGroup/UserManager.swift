@@ -1,13 +1,14 @@
 import Foundation
 import CryptoKit
-import SwiftData
 
 class UserManager {
     static let shared = UserManager()
     
     private var users: [Database] = []
     
-    private init() {}
+    private init() {
+        loadUsers()
+    }
     
     func createUser(name: String, username: String, email: String, password: String, completion: @escaping (Bool) -> Void) {
         if let _ = getUserByEmail(email) {
@@ -40,17 +41,23 @@ class UserManager {
     
     func addHabit(for user: Database, habit: Habit) {
         if let index = users.firstIndex(where: { $0.id == user.id }) {
-            users[index].addHabit(habit)
+            if let habitIndex = users[index].habits.firstIndex(where: { $0.id == habit.id }) {
+                users[index].habits[habitIndex] = habit
+            } else {
+                users[index].habits.append(habit)
+            }
+            saveUsers()
         }
     }
     
     func removeHabit(for user: Database, habit: Habit) {
         if let index = users.firstIndex(where: { $0.id == user.id }) {
             users[index].removeHabit(habit)
+            saveUsers()
         }
     }
     
-    private func getUserByEmail(_ email: String) -> Database? {
+    func getUserByEmail(_ email: String) -> Database? {
         return users.first(where: { $0.email == email })
     }
 
@@ -60,7 +67,22 @@ class UserManager {
     
     private func saveUser(_ user: Database) -> Bool {
         users.append(user)
+        saveUsers()
         return true
+    }
+    
+    private func saveUsers() {
+        if let encoded = try? JSONEncoder().encode(users) {
+            UserDefaults.standard.set(encoded, forKey: "users")
+        }
+    }
+    
+    private func loadUsers() {
+        if let savedUsers = UserDefaults.standard.data(forKey: "users") {
+            if let decodedUsers = try? JSONDecoder().decode([Database].self, from: savedUsers) {
+                users = decodedUsers
+            }
+        }
     }
     
     private func hashPassword(_ password: String) -> String {
