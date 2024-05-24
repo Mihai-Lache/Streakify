@@ -15,6 +15,7 @@ class Database:Identifiable {
     var username: String
     var email: String
     var password: String
+    var habits: [Habit]
     
     init(name: String, username: String, email: String, password: String){
         self.id = UUID().uuidString
@@ -22,6 +23,7 @@ class Database:Identifiable {
         self.username = username
         self.email = email
         self.password = password
+        self.habits = []
     }
     
 }
