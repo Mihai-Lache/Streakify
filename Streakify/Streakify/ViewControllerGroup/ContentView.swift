@@ -70,10 +70,10 @@ struct AddHabitView: View {
     @State private var notificationFrequency: String = "None"
     @State private var enableNotifications: Bool = false
 
+    let user: Database
     let frequencies = ["None", "Daily", "Weekly", "Monthly"]
-
-    let backgroundColor = Color(red: 11 / 255, green: 37 / 255, blue: 64 / 255) // Old background color
-    let darkTealColor = Color(red: 5 / 255, green: 102 / 255, blue: 141 / 255) // Button color
+    let backgroundColor = Color(red: 11 / 255, green: 37 / 255, blue: 64 / 255)
+    let darkTealColor = Color(red: 5 / 255, green: 102 / 255, blue: 141 / 255)
 
     var body: some View {
         NavigationView {
@@ -175,6 +175,7 @@ struct AddHabitView: View {
                                 notificationDays: []
                             )
                             habits.append(newHabit)
+                            UserManager.shared.addHabit(for: user, habit: newHabit) // Save the habit to the user
                             presentationMode.wrappedValue.dismiss()
                         }
                     }) {
@@ -216,9 +217,11 @@ struct AddHabitView: View {
 
 struct AddHabitView_Previews: PreviewProvider {
     static var previews: some View {
-        AddHabitView(habits: .constant([]))
+        AddHabitView(habits: .constant([]), user: Database(name: "User", username: "user", email: "user@example.com", password: "password"))
     }
 }
+
+
 
 struct PlaceholderTextField: View {
     var placeholder: Text
@@ -333,6 +336,123 @@ struct EditHabitView: View {
 struct EditHabitView_Previews: PreviewProvider {
     static var previews: some View {
         EditHabitView(habit: Habit(name: "Sample Habit", description: "Sample Description", totalDuration: 30), habits: .constant([]))
+    }
+}
+
+struct NotificationSettingsView: View {
+    @Binding var habit: Habit
+    @Environment(\.presentationMode) var presentationMode
+
+    let frequencies = ["None", "Daily", "Weekly", "Monthly"]
+    let daysOfWeek = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"]
+
+    @State private var enableNotifications: Bool
+    @State private var selectedFrequency: String
+    @State private var selectedTime: Date
+    @State private var selectedDays: Set<String>
+
+    init(habit: Binding<Habit>) {
+        self._habit = habit
+        self._enableNotifications = State(initialValue: habit.wrappedValue.notificationFrequency != "None")
+        self._selectedFrequency = State(initialValue: habit.wrappedValue.notificationFrequency)
+        self._selectedTime = State(initialValue: habit.wrappedValue.notificationTime ?? Date())
+        self._selectedDays = State(initialValue: Set(habit.wrappedValue.notificationDays))
+    }
+
+    var body: some View {
+        NavigationView {
+            Form {
+                Section(header: Text("Notification Settings")) {
+                    Toggle(isOn: $enableNotifications) {
+                        Text("Enable Notifications")
+                    }
+
+                    if enableNotifications {
+                        Picker("Frequency", selection: $selectedFrequency) {
+                            ForEach(frequencies, id: \.self) { frequency in
+                                Text(frequency).tag(frequency)
+                            }
+                        }
+                        .pickerStyle(SegmentedPickerStyle())
+
+                        DatePicker("Time", selection: $selectedTime, displayedComponents: .hourAndMinute)
+
+                        if selectedFrequency == "Weekly" {
+                            VStack(alignment: .leading) {
+                                Text("Days")
+                                ForEach(daysOfWeek, id: \.self) { day in
+                                    Button(action: {
+                                        if selectedDays.contains(day) {
+                                            selectedDays.remove(day)
+                                        } else {
+                                            selectedDays.insert(day)
+                                        }
+                                    }) {
+                                        HStack {
+                                            Text(day)
+                                            Spacer()
+                                            if selectedDays.contains(day) {
+                                                Image(systemName: "checkmark")
+                                                    .foregroundColor(.blue)
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            .navigationBarTitle("Notification Settings", displayMode: .inline)
+            .navigationBarItems(
+                leading: Button("Cancel") {
+                    presentationMode.wrappedValue.dismiss()
+                },
+                trailing: Button("Save") {
+                    habit.notificationFrequency = enableNotifications ? selectedFrequency : "None"
+                    habit.notificationTime = enableNotifications ? selectedTime : nil
+                    habit.notificationDays = enableNotifications && selectedFrequency == "Weekly" ? Array(selectedDays) : []
+                    presentationMode.wrappedValue.dismiss()
+                }
+            )
+        }
+    }
+}
+
+struct HistoryView: View {
+    var completionDates: [String]
+
+    var body: some View {
+        VStack(alignment: .leading) {
+            Text("Completion History")
+                .font(.largeTitle)
+                .fontWeight(.bold)
+                .padding(.bottom)
+
+            if completionDates.isEmpty {
+                Text("No completion history available.")
+                    .foregroundColor(.white)
+                    .padding()
+            } else {
+                List {
+                    ForEach(completionDates, id: \.self) { date in
+                        Text(date)
+                            .padding()
+                            .background(Color(red: 11 / 255, green: 37 / 255, blue: 64 / 255))
+                            .cornerRadius(10)
+                            .foregroundColor(.white)
+                            .listRowBackground(Color.clear)
+                    }
+                }
+                .listStyle(PlainListStyle())
+                .background(Color(red: 11 / 255, green: 37 / 255, blue: 64 / 255))
+            }
+
+            Spacer()
+        }
+        .padding()
+        .background(Color(red: 11 / 255, green: 37 / 255, blue: 64 / 255).edgesIgnoringSafeArea(.all))
+        .foregroundColor(.white)
     }
 }
 

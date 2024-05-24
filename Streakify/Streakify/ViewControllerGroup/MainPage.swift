@@ -38,7 +38,7 @@ struct MainPageView: View {
 
                     List {
                         ForEach(habits) { habit in
-                            HabitRow(habit: habit, habits: $habits)
+                            HabitRow(habit: habit, habits: $habits, username: username)
                                 .listRowBackground(backgroundColor)
                         }
                         .onDelete(perform: deleteHabits)
@@ -82,7 +82,9 @@ struct MainPageView: View {
                         .background(Color.green)
                         .cornerRadius(10)
                         .sheet(isPresented: $showingAddHabit) {
-                            AddHabitView(habits: $habits)
+                            if let currentUser = UserManager.shared.getUserByUsername(username) {
+                                AddHabitView(habits: $habits, user: currentUser)
+                            }
                         }
                     }
                     .padding(.horizontal)
@@ -90,16 +92,31 @@ struct MainPageView: View {
             }
             .navigationBarHidden(true)
         }
+        .onAppear {
+            loadHabits()
+        }
+    }
+
+    func loadHabits() {
+        if let currentUser = UserManager.shared.getUserByUsername(username) {
+            habits = currentUser.habits
+        }
     }
 
     func deleteHabits(at offsets: IndexSet) {
-        habits.remove(atOffsets: offsets)
+        if let currentUser = UserManager.shared.getUserByUsername(username) {
+            for index in offsets {
+                UserManager.shared.removeHabit(for: currentUser, habit: habits[index])
+            }
+            habits.remove(atOffsets: offsets)
+        }
     }
 }
 
 struct HabitRow: View {
     var habit: Habit
     @Binding var habits: [Habit]
+    var username: String
 
     @State private var showingDetail = false
     @State private var showingNotificationSettings = false
@@ -118,6 +135,9 @@ struct HabitRow: View {
                         habits[index].streakCount = 0  // Reset streak count
                         habits[index].completionDates.removeAll(where: { Calendar.current.isDate($0, inSameDayAs: Date()) }) // Remove today's completion date
                     }
+                }
+                if let currentUser = UserManager.shared.getUserByUsername(username) {
+                    UserManager.shared.addHabit(for: currentUser, habit: habits.first { $0.id == habit.id }!)
                 }
             }) {
                 Image(systemName: habit.isCompleted ? "checkmark.circle.fill" : "circle")
@@ -150,7 +170,7 @@ struct HabitRow: View {
             }
             .background(
                 NavigationLink(
-                    destination: HabitDetailView(habit: habit, habits: $habits),
+                    destination: HabitDetailView(habit: habit, habits: $habits, username: username),
                     isActive: $showingDetail,
                     label: { EmptyView() }
                 )
@@ -170,6 +190,9 @@ struct HabitRow: View {
                             }
                         }
                     }
+                }
+                if let currentUser = UserManager.shared.getUserByUsername(username) {
+                    UserManager.shared.addHabit(for: currentUser, habit: habits.first { $0.id == habit.id }!)
                 }
             }) {
                 ZStack {
@@ -195,12 +218,18 @@ struct HabitRow: View {
             }
             .buttonStyle(PlainButtonStyle())
             .sheet(isPresented: $showingNotificationSettings) {
-                NotificationSettingsView(habit: $habits[habits.firstIndex(where: { $0.id == habit.id })!])
+                if let currentUser = UserManager.shared.getUserByUsername(username),
+                   let habitIndex = currentUser.habits.firstIndex(where: { $0.id == habit.id }) {
+                    NotificationSettingsView(habit: $habits[habitIndex])
+                }
             }
 
             Button(action: {
                 if let index = habits.firstIndex(where: { $0.id == habit.id }) {
                     habits.remove(at: index)
+                    if let currentUser = UserManager.shared.getUserByUsername(username) {
+                        UserManager.shared.removeHabit(for: currentUser, habit: habit)
+                    }
                 }
             }) {
                 Image(systemName: "minus.circle.fill")
@@ -216,15 +245,10 @@ struct HabitRow: View {
     }
 }
 
-struct MainPageView_Previews: PreviewProvider {
-    static var previews: some View {
-        MainPageView(username: "User")
-    }
-}
-
 struct HabitDetailView: View {
     var habit: Habit
     @Binding var habits: [Habit]
+    var username: String
 
     @State private var showingEditHabit = false
     @State private var showingHistory = false
@@ -304,6 +328,9 @@ struct HabitDetailView: View {
                     Button(action: {
                         if let index = habits.firstIndex(where: { $0.id == habit.id }) {
                             habits.remove(at: index)
+                            if let currentUser = UserManager.shared.getUserByUsername(username) {
+                                UserManager.shared.removeHabit(for: currentUser, habit: habit)
+                            }
                         }
                     }) {
                         Text("Delete Habit")
@@ -321,128 +348,5 @@ struct HabitDetailView: View {
             .foregroundColor(.white)
         }
         .background(Color(red: 11 / 255, green: 37 / 255, blue: 64 / 255).edgesIgnoringSafeArea(.all))
-    }
-}
-
-struct HistoryView: View {
-    var completionDates: [String]
-
-    var body: some View {
-        VStack(alignment: .leading) {
-            Text("Completion History")
-                .font(.largeTitle)
-                .fontWeight(.bold)
-                .padding(.bottom)
-
-            if completionDates.isEmpty {
-                Text("No completion history available.")
-                    .foregroundColor(.white)
-                    .padding()
-            } else {
-                List {
-                    ForEach(completionDates, id: \.self) { date in
-                        Text(date)
-                            .padding()
-                            .background(Color(red: 11 / 255, green: 37 / 255, blue: 64 / 255))
-                            .cornerRadius(10)
-                            .foregroundColor(.white)
-                            .listRowBackground(Color.clear)
-                    }
-                }
-                .listStyle(PlainListStyle())
-                .background(Color(red: 11 / 255, green: 37 / 255, blue: 64 / 255))
-            }
-
-            Spacer()
-        }
-        .padding()
-        .background(Color(red: 11 / 255, green: 37 / 255, blue: 64 / 255).edgesIgnoringSafeArea(.all))
-        .foregroundColor(.white)
-    }
-}
-
-struct NotificationSettingsView: View {
-    @Binding var habit: Habit
-    @Environment(\.presentationMode) var presentationMode
-
-    let frequencies = ["None", "Daily", "Weekly", "Monthly"]
-    let daysOfWeek = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"]
-
-    @State private var enableNotifications: Bool
-    @State private var selectedFrequency: String
-    @State private var selectedTime: Date
-    @State private var selectedDays: Set<String>
-
-    init(habit: Binding<Habit>) {
-        self._habit = habit
-        self._enableNotifications = State(initialValue: habit.wrappedValue.notificationFrequency != "None")
-        self._selectedFrequency = State(initialValue: habit.wrappedValue.notificationFrequency)
-        self._selectedTime = State(initialValue: habit.wrappedValue.notificationTime ?? Date())
-        self._selectedDays = State(initialValue: Set(habit.wrappedValue.notificationDays))
-    }
-
-    var body: some View {
-        NavigationView {
-            Form {
-                Section(header: Text("Notification Settings")) {
-                    Toggle(isOn: $enableNotifications) {
-                        Text("Enable Notifications")
-                    }
-
-                    if enableNotifications {
-                        Picker("Frequency", selection: $selectedFrequency) {
-                            ForEach(frequencies, id: \.self) { frequency in
-                                Text(frequency).tag(frequency)
-                            }
-                        }
-                        .pickerStyle(SegmentedPickerStyle())
-
-                        DatePicker("Time", selection: $selectedTime, displayedComponents: .hourAndMinute)
-
-                        if selectedFrequency == "Weekly" {
-                            VStack(alignment: .leading) {
-                                Text("Days")
-                                ForEach(daysOfWeek, id: \.self) { day in
-                                    Button(action: {
-                                        if selectedDays.contains(day) {
-                                            selectedDays.remove(day)
-                                        } else {
-                                            selectedDays.insert(day)
-                                        }
-                                    }) {
-                                        HStack {
-                                            Text(day)
-                                            Spacer()
-                                            if selectedDays.contains(day) {
-                                                Image(systemName: "checkmark")
-                                                    .foregroundColor(.blue)
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-            .navigationBarTitle("Notification Settings", displayMode: .inline)
-            .navigationBarItems(
-                leading: Button("Cancel") {
-                    presentationMode.wrappedValue.dismiss()
-                },
-                trailing: Button("Save") {
-                    habit.notificationFrequency = enableNotifications ? selectedFrequency : "None"
-                    habit.notificationTime = enableNotifications ? selectedTime : nil
-                    habit.notificationDays = enableNotifications && selectedFrequency == "Weekly" ? Array(selectedDays) : []
-                    presentationMode.wrappedValue.dismiss()
-                }
-            )
-        }
-    }
-}
-
-struct NotificationSettingsView_Previews: PreviewProvider {
-    static var previews: some View {
-        NotificationSettingsView(habit: .constant(Habit(name: "Sample Habit", description: "Sample Description", totalDuration: 30)))
     }
 }

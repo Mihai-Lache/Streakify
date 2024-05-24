@@ -1,9 +1,3 @@
-//  Database.swift
-//  Streakify
-//
-//  Created by Arya on 4/25/24.
-//
-
 import Foundation
 
 class Database: Identifiable {
