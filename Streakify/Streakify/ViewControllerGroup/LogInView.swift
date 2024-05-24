@@ -9,6 +9,8 @@ struct LoginView: View {
     @State private var showLoginError = false
     @State private var navigateToSignUp = false
     
+    @State private var loggedInUser: Database? = nil
+    
     @Binding var showLogin: Bool
     
     let backgroundColor = Color(red: 11 / 255, green: 37 / 255, blue: 64 / 255)
@@ -51,7 +53,7 @@ struct LoginView: View {
                         .padding(.bottom, 5)
                     
                     if showLoginError {
-                        Text("Invalid email or password")
+                        Text("Invalid username or password")
                             .foregroundColor(.red)
                             .padding(.bottom, 10)
                     }
@@ -64,8 +66,9 @@ struct LoginView: View {
                     
                     Button("Login") {
                         showLoginError = false // Reset the error state
-                        UserManager.shared.loginUser(email: username, password: password) { success in
+                        UserManager.shared.loginUser(username: username, password: password) { success, user in
                             if success {
+                                loggedInUser = user
                                 navigatingToMainPage = true
                             } else {
                                 showLoginError = true
@@ -100,7 +103,9 @@ struct LoginView: View {
                 ForgotPasswordView()
             }
             .navigationDestination(isPresented: $navigatingToMainPage) {
-                MainPageView()
+                if let user = loggedInUser {
+                    MainPageView(username: user.name)
+                }
             }
             .background(
                 NavigationLink(

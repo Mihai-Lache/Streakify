@@ -7,6 +7,7 @@ struct SignUpView: View {
     @State private var username: String = ""
     @State private var email: String = ""
     @State private var password: String = ""
+    @State private var confirmPassword: String = ""
     @State private var showSignUpError = false
     
     @Binding var showLogin: Bool
@@ -37,30 +38,37 @@ struct SignUpView: View {
                     .background(Color.white.opacity(1))
                     .cornerRadius(5.0)
                     .padding(.bottom, 15)
+                    .autocapitalization(.words)
                 
                 TextField("Username", text: $username)
                     .padding()
                     .background(Color.white.opacity(1))
                     .cornerRadius(5.0)
                     .padding(.bottom, 15)
+                    .autocapitalization(.none)
+                    .textContentType(.username)
                 
                 TextField("Email", text: $email)
                     .padding()
                     .background(Color.white.opacity(1))
                     .cornerRadius(5.0)
                     .padding(.bottom, 15)
+                    .autocapitalization(.none)
+                    .textContentType(.emailAddress)
                 
                 SecureField("Password", text: $password)
                     .padding()
                     .background(Color.white.opacity(1))
                     .cornerRadius(5.0)
                     .padding(.bottom, 15)
+                    .textContentType(.newPassword) // Set to .newPassword to avoid auto-suggestions
                 
-                SecureField("Confirm Password", text: $password)
+                SecureField("Confirm Password", text: $confirmPassword)
                     .padding()
                     .background(Color.white.opacity(1))
                     .cornerRadius(5.0)
                     .padding(.bottom, 20)
+                    .textContentType(.newPassword) // Set to .newPassword to avoid auto-suggestions
                 
                 if showSignUpError {
                     Text("Sign up failed. Please try again.")
@@ -69,14 +77,18 @@ struct SignUpView: View {
                 }
                 
                 Button("Sign Up") {
-                    UserManager.shared.createUser(name: name, username: username, email: email, password: password) { success in
-                        if success {
-                            print("User created successfully")
-                            showLogin = true
-                            dismiss()
-                        } else {
-                            showSignUpError = true
+                    if password == confirmPassword {
+                        UserManager.shared.createUser(name: name, username: username, email: email, password: password) { success in
+                            if success {
+                                print("User created successfully")
+                                showLogin = true
+                                dismiss()
+                            } else {
+                                showSignUpError = true
+                            }
                         }
+                    } else {
+                        showSignUpError = true
                     }
                 }
                 .foregroundColor(.white)
