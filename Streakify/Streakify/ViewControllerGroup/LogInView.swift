@@ -94,6 +94,12 @@ struct LoginView: View {
                     Spacer()
                 }
                 .padding()
+                .onAppear {
+                    // Fixes bug that keeps the information same if u go back to page
+                    username = ""
+                    password = ""
+                    showLoginError = false
+                }
             }
             .navigationBarHidden(true)
             .navigationBarTitleDisplayMode(.inline)
