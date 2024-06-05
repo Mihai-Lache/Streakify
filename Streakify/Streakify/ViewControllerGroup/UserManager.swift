@@ -71,6 +71,14 @@ class UserManager {
         return true
     }
     
+    func updateUserPassword(username: String, newPassword: String) {
+        if let index = users.firstIndex(where: { $0.username == username }) {
+            let hashedPassword = hashPassword(newPassword)
+            users[index].password = hashedPassword
+            saveUsers()
+        }
+    }
+    
     private func saveUsers() {
         if let encoded = try? JSONEncoder().encode(users) {
             UserDefaults.standard.set(encoded, forKey: "users")
