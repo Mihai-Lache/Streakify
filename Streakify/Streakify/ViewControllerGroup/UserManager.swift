@@ -5,6 +5,7 @@ class UserManager {
     static let shared = UserManager()
     
     private var users: [Database] = []
+    private var loggedInUser: Database? = nil  // Current logged-in user
     
     private init() {
         loadUsers()
@@ -33,10 +34,15 @@ class UserManager {
         }
         
         if verifyPassword(password, hashedPassword: user.password) {
+            loggedInUser = user
             completion(true, user)
         } else {
             completion(false, nil)
         }
+    }
+    
+    func logoutUser() {
+        loggedInUser = nil
     }
     
     func addHabit(for user: Database, habit: Habit) {
@@ -63,6 +69,11 @@ class UserManager {
 
     func getUserByUsername(_ username: String) -> Database? {
         return users.first(where: { $0.username == username })
+    }
+    
+    func clearUsers() {
+        users.removeAll()
+        UserDefaults.standard.removeObject(forKey: "users")
     }
     
     private func saveUser(_ user: Database) -> Bool {

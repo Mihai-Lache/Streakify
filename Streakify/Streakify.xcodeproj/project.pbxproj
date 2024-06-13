@@ -24,6 +24,12 @@
 		46E5B1DE2BE552580022248A /* Notifications.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46E5B1DD2BE552580022248A /* Notifications.swift */; };
 		46E5B1E02BE68B5B0022248A /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46E5B1DF2BE68B5B0022248A /* SettingsView.swift */; };
 		7F077CD52C0098D7008B5761 /* Habit.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7F077CD42C0098D7008B5761 /* Habit.swift */; };
+		7F36C2472C1AB8A4007ECC29 /* E2ETests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7F36C2462C1AB8A4007ECC29 /* E2ETests.swift */; };
+		7F36C2492C1AB9B0007ECC29 /* SignUpViewTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7F36C2482C1AB9B0007ECC29 /* SignUpViewTests.swift */; };
+		7F36C24B2C1AB9D0007ECC29 /* LoginViewTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7F36C24A2C1AB9D0007ECC29 /* LoginViewTests.swift */; };
+		7F36C24D2C1ABAB3007ECC29 /* AddHabitViewTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7F36C24C2C1ABAB3007ECC29 /* AddHabitViewTests.swift */; };
+		7F36C24F2C1ABACE007ECC29 /* EditHabitViewTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7F36C24E2C1ABACE007ECC29 /* EditHabitViewTests.swift */; };
+		7F36C2512C1ABAF5007ECC29 /* DeleteHabitViewTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7F36C2502C1ABAF5007ECC29 /* DeleteHabitViewTests.swift */; };
 		7F5EE73A2C00310A00595BCB /* UserManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7F5EE7392C00310A00595BCB /* UserManager.swift */; };
 		91D040B02BF6B4C3002F0A0F /* ParticleEffectView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 91D040AF2BF6B4C3002F0A0F /* ParticleEffectView.swift */; };
 		C90C72812BDB862C00F7E6A1 /* Database.swift in Sources */ = {isa = PBXBuildFile; fileRef = C90C72802BDB862C00F7E6A1 /* Database.swift */; };
@@ -67,6 +73,12 @@
 		46E5B1DD2BE552580022248A /* Notifications.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Notifications.swift; sourceTree = "<group>"; };
 		46E5B1DF2BE68B5B0022248A /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 		7F077CD42C0098D7008B5761 /* Habit.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Habit.swift; sourceTree = "<group>"; };
+		7F36C2462C1AB8A4007ECC29 /* E2ETests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = E2ETests.swift; sourceTree = "<group>"; };
+		7F36C2482C1AB9B0007ECC29 /* SignUpViewTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SignUpViewTests.swift; sourceTree = "<group>"; };
+		7F36C24A2C1AB9D0007ECC29 /* LoginViewTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginViewTests.swift; sourceTree = "<group>"; };
+		7F36C24C2C1ABAB3007ECC29 /* AddHabitViewTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddHabitViewTests.swift; sourceTree = "<group>"; };
+		7F36C24E2C1ABACE007ECC29 /* EditHabitViewTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditHabitViewTests.swift; sourceTree = "<group>"; };
+		7F36C2502C1ABAF5007ECC29 /* DeleteHabitViewTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeleteHabitViewTests.swift; sourceTree = "<group>"; };
 		7F5EE7392C00310A00595BCB /* UserManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserManager.swift; sourceTree = "<group>"; };
 		91D040AF2BF6B4C3002F0A0F /* ParticleEffectView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ParticleEffectView.swift; sourceTree = "<group>"; };
 		C90C72802BDB862C00F7E6A1 /* Database.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Database.swift; sourceTree = "<group>"; };
@@ -143,6 +155,12 @@
 			isa = PBXGroup;
 			children = (
 				46E5B1B52BD958920022248A /* StreakifyTests.swift */,
+				7F36C2462C1AB8A4007ECC29 /* E2ETests.swift */,
+				7F36C2482C1AB9B0007ECC29 /* SignUpViewTests.swift */,
+				7F36C24A2C1AB9D0007ECC29 /* LoginViewTests.swift */,
+				7F36C24C2C1ABAB3007ECC29 /* AddHabitViewTests.swift */,
+				7F36C24E2C1ABACE007ECC29 /* EditHabitViewTests.swift */,
+				7F36C2502C1ABAF5007ECC29 /* DeleteHabitViewTests.swift */,
 			);
 			path = StreakifyTests;
 			sourceTree = "<group>";
@@ -326,7 +344,13 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				7F36C2492C1AB9B0007ECC29 /* SignUpViewTests.swift in Sources */,
+				7F36C2512C1ABAF5007ECC29 /* DeleteHabitViewTests.swift in Sources */,
+				7F36C2472C1AB8A4007ECC29 /* E2ETests.swift in Sources */,
+				7F36C24B2C1AB9D0007ECC29 /* LoginViewTests.swift in Sources */,
+				7F36C24D2C1ABAB3007ECC29 /* AddHabitViewTests.swift in Sources */,
 				46E5B1B62BD958920022248A /* StreakifyTests.swift in Sources */,
+				7F36C24F2C1ABACE007ECC29 /* EditHabitViewTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
