@@ -5,6 +5,7 @@ class UserManager {
     static let shared = UserManager()
     
     private var users: [Database] = []
+    private var loggedInUser: Database? = nil  // Current logged-in user
     
     private init() {
         loadUsers()
@@ -33,10 +34,15 @@ class UserManager {
         }
         
         if verifyPassword(password, hashedPassword: user.password) {
+            loggedInUser = user
             completion(true, user)
         } else {
             completion(false, nil)
         }
+    }
+    
+    func logoutUser() {
+        loggedInUser = nil
     }
     
     func addHabit(for user: Database, habit: Habit) {
@@ -65,18 +71,15 @@ class UserManager {
         return users.first(where: { $0.username == username })
     }
     
+    func clearUsers() {
+        users.removeAll()
+        UserDefaults.standard.removeObject(forKey: "users")
+    }
+    
     private func saveUser(_ user: Database) -> Bool {
         users.append(user)
         saveUsers()
         return true
-    }
-    
-    func updateUserPassword(username: String, newPassword: String) {
-        if let index = users.firstIndex(where: { $0.username == username }) {
-            let hashedPassword = hashPassword(newPassword)
-            users[index].password = hashedPassword
-            saveUsers()
-        }
     }
     
     private func saveUsers() {
@@ -92,6 +95,16 @@ class UserManager {
             }
         }
     }
+    
+    
+    func updateUserPassword(username: String, newPassword: String) {
+        if let index = users.firstIndex(where: { $0.username == username }) {
+            let hashedPassword = hashPassword(newPassword)
+            users[index].password = hashedPassword
+            saveUsers()
+        }
+    }
+        
     
     private func hashPassword(_ password: String) -> String {
         let data = Data(password.utf8)
