@@ -5,31 +5,64 @@
 //  Created by Srikar Rani on 6/12/24.
 //
 
+//
+//  DeleteHabitViewTests.swift
+//  StreakifyTests
+//
+//  Created by Srikar Rani on 6/12/24.
+//
+
 import XCTest
+@testable import Streakify
 
-final class DeleteHabitViewTests: XCTestCase {
+class DeleteHabitViewTests: XCTestCase {
 
-    override func setUpWithError() throws {
-        // Put setup code here. This method is called before the invocation of each test method in the class.
-    }
-
-    override func tearDownWithError() throws {
-        // Put teardown code here. This method is called after the invocation of each test method in the class.
-    }
-
-    func testExample() throws {
-        // This is an example of a functional test case.
-        // Use XCTAssert and related functions to verify your tests produce the correct results.
-        // Any test you write for XCTest can be annotated as throws and async.
-        // Mark your test throws to produce an unexpected failure when your test encounters an uncaught error.
-        // Mark your test async to allow awaiting for asynchronous code to complete. Check the results with assertions afterwards.
-    }
-
-    func testPerformanceExample() throws {
-        // This is an example of a performance test case.
-        self.measure {
-            // Put the code you want to measure the time of here.
+    class DeleteHabitViewModel: ObservableObject {
+        func deleteHabit(from habits: inout [Habit], habitID: UUID) -> Bool {
+            if let index = habits.firstIndex(where: { $0.id == habitID }) {
+                habits.remove(at: index)
+                return true
+            }
+            return false
         }
     }
 
+    override func setUp() {
+        super.setUp()
+        UserManager.shared.clearUsers()
+    }
+
+    func testDeleteHabitSuccess() {
+        // Given
+        var habits = [Habit]()
+        let habit = Habit(name: "Exercise", description: "Daily exercise", totalDuration: 30)
+        habits.append(habit)
+        
+        let viewModel = DeleteHabitViewModel()
+        
+        // When
+        let success = viewModel.deleteHabit(from: &habits, habitID: habit.id)
+        
+        // Then
+        XCTAssertTrue(success, "Habit should be deleted successfully.")
+        XCTAssertEqual(habits.count, 0, "Habits count should be 0.")
+    }
+
+    func testDeleteHabitFailure() {
+        // Given
+        var habits = [Habit]()
+        let habit = Habit(name: "Exercise", description: "Daily exercise", totalDuration: 30)
+        habits.append(habit)
+        
+        let anotherHabit = Habit(name: "Reading", description: "Daily reading", totalDuration: 15)
+        
+        let viewModel = DeleteHabitViewModel()
+        
+        // When
+        let success = viewModel.deleteHabit(from: &habits, habitID: anotherHabit.id)
+        
+        // Then
+        XCTAssertFalse(success, "Habit should not be deleted if it does not exist in the list.")
+        XCTAssertEqual(habits.count, 1, "Habits count should remain 1.")
+    }
 }

@@ -6,30 +6,66 @@
 //
 
 import XCTest
+import SwiftUI
+@testable import Streakify
 
-final class LoginViewTests: XCTestCase {
+class LoginViewTests: XCTestCase {
 
-    override func setUpWithError() throws {
-        // Put setup code here. This method is called before the invocation of each test method in the class.
-    }
+    class LoginViewModel: ObservableObject {
+        @Published var username: String = ""
+        @Published var password: String = ""
+        @Published var showLoginError: Bool = false
 
-    override func tearDownWithError() throws {
-        // Put teardown code here. This method is called after the invocation of each test method in the class.
-    }
-
-    func testExample() throws {
-        // This is an example of a functional test case.
-        // Use XCTAssert and related functions to verify your tests produce the correct results.
-        // Any test you write for XCTest can be annotated as throws and async.
-        // Mark your test throws to produce an unexpected failure when your test encounters an uncaught error.
-        // Mark your test async to allow awaiting for asynchronous code to complete. Check the results with assertions afterwards.
-    }
-
-    func testPerformanceExample() throws {
-        // This is an example of a performance test case.
-        self.measure {
-            // Put the code you want to measure the time of here.
+        func login(completion: @escaping (Bool) -> Void) {
+            UserManager.shared.loginUser(username: username, password: password) { success, _ in
+                DispatchQueue.main.async {
+                    self.showLoginError = !success
+                    completion(success)
+                }
+            }
         }
     }
 
+    override func setUp() {
+        super.setUp()
+        UserManager.shared.clearUsers()
+    }
+
+    func testLoginSuccess() {
+        // Given
+        let viewModel = LoginViewModel()
+        viewModel.username = "johndoe"
+        viewModel.password = "Pass1234"
+        
+        // Create a user for testing
+        let expectation = self.expectation(description: "User registration")
+        UserManager.shared.createUser(name: "John Doe", username: viewModel.username, email: "john.doe@example.com", password: viewModel.password) { success in
+            XCTAssertTrue(success, "User should be created successfully")
+            expectation.fulfill()
+        }
+        waitForExpectations(timeout: 5, handler: nil)
+        
+        // When
+        let loginExpectation = self.expectation(description: "User login")
+        viewModel.login { success in
+            XCTAssertTrue(success, "User should be able to log in with correct credentials.")
+            loginExpectation.fulfill()
+        }
+        waitForExpectations(timeout: 5, handler: nil)
+    }
+
+    func testLoginFailure() {
+        // Given
+        let viewModel = LoginViewModel()
+        viewModel.username = "johndoe"
+        viewModel.password = "WrongPass"
+        
+        // When
+        let loginExpectation = self.expectation(description: "User login")
+        viewModel.login { success in
+            XCTAssertFalse(success, "User should not be able to log in with incorrect credentials.")
+            loginExpectation.fulfill()
+        }
+        waitForExpectations(timeout: 5, handler: nil)
+    }
 }

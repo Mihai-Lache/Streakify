@@ -6,30 +6,78 @@
 //
 
 import XCTest
+@testable import Streakify
 
-final class EditHabitViewTests: XCTestCase {
+class EditHabitViewTests: XCTestCase {
 
-    override func setUpWithError() throws {
-        // Put setup code here. This method is called before the invocation of each test method in the class.
-    }
+    class EditHabitViewModel: ObservableObject {
+        @Published var habitName: String
+        @Published var habitDescription: String
+        @Published var habitDuration: String
 
-    override func tearDownWithError() throws {
-        // Put teardown code here. This method is called after the invocation of each test method in the class.
-    }
+        init(habit: Habit) {
+            self.habitName = habit.name
+            self.habitDescription = habit.description
+            self.habitDuration = String(habit.totalDuration)
+        }
 
-    func testExample() throws {
-        // This is an example of a functional test case.
-        // Use XCTAssert and related functions to verify your tests produce the correct results.
-        // Any test you write for XCTest can be annotated as throws and async.
-        // Mark your test throws to produce an unexpected failure when your test encounters an uncaught error.
-        // Mark your test async to allow awaiting for asynchronous code to complete. Check the results with assertions afterwards.
-    }
-
-    func testPerformanceExample() throws {
-        // This is an example of a performance test case.
-        self.measure {
-            // Put the code you want to measure the time of here.
+        func saveChanges(to habits: inout [Habit], habit: Habit) -> Bool {
+            guard let totalDays = Int(habitDuration), !habitName.isEmpty else {
+                return false
+            }
+            
+            if let index = habits.firstIndex(where: { $0.id == habit.id }) {
+                habits[index].name = habitName
+                habits[index].description = habitDescription
+                habits[index].totalDuration = totalDays
+                return true
+            }
+            return false
         }
     }
 
+    override func setUp() {
+        super.setUp()
+        UserManager.shared.clearUsers()
+    }
+
+    func testEditHabitSuccess() {
+        // Given
+        var habits = [Habit]()
+        let habit = Habit(name: "Exercise", description: "Daily exercise", totalDuration: 30)
+        habits.append(habit)
+        
+        let viewModel = EditHabitViewModel(habit: habit)
+        viewModel.habitName = "Yoga"
+        viewModel.habitDescription = "Daily yoga practice"
+        viewModel.habitDuration = "60"
+        
+        // When
+        let success = viewModel.saveChanges(to: &habits, habit: habit)
+        
+        // Then
+        XCTAssertTrue(success, "Habit should be edited successfully.")
+        XCTAssertEqual(habits[0].name, "Yoga", "Habit name should be 'Yoga'.")
+        XCTAssertEqual(habits[0].description, "Daily yoga practice", "Habit description should be 'Daily yoga practice'.")
+        XCTAssertEqual(habits[0].totalDuration, 60, "Habit duration should be 60.")
+    }
+
+    func testEditHabitFailure() {
+        // Given
+        var habits = [Habit]()
+        let habit = Habit(name: "Exercise", description: "Daily exercise", totalDuration: 30)
+        habits.append(habit)
+        
+        let viewModel = EditHabitViewModel(habit: habit)
+        viewModel.habitName = ""
+        viewModel.habitDescription = "Daily yoga practice"
+        viewModel.habitDuration = "60"
+        
+        // When
+        let success = viewModel.saveChanges(to: &habits, habit: habit)
+        
+        // Then
+        XCTAssertFalse(success, "Habit should not be edited with empty name.")
+        XCTAssertEqual(habits[0].name, "Exercise", "Habit name should remain 'Exercise'.")
+    }
 }
